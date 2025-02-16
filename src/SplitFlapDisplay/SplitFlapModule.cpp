@@ -14,13 +14,13 @@ int SplitFlapModule::charPositions[37]; //to be written in init function
 //Default Constructor
 SplitFlapModule::SplitFlapModule()
     : address(0), position(0), stepNumber(0),stepsPerRotation(0){ //default values
-  magnetPosition = 700;
+  magnetPosition = 710; //sort of guessing
 }
 
 // Constructor implementation
-SplitFlapModule::SplitFlapModule(uint8_t I2Caddress,int stepsPerFullRotation, int stepOffset)
+SplitFlapModule::SplitFlapModule(uint8_t I2Caddress,int stepsPerFullRotation, int stepOffset,int magnetPos)
     : address(I2Caddress), position(0), stepNumber(0), stepsPerRotation(stepsPerFullRotation){
-  magnetPosition = 710 + stepOffset;
+  magnetPosition = magnetPos + stepOffset;
 }
 
 void SplitFlapModule::writeIO(uint16_t data) {
@@ -32,26 +32,38 @@ void SplitFlapModule::writeIO(uint16_t data) {
   if (error == 0) {
     // Serial.println("Data written successfully.");
   } else {
-    // Serial.print("Error writing data, error code: ");
-    // Serial.println(error);  // Error codes:
-    //                         // 0 = success
-    //                         // 1 = data too long to fit in transmit buffer
-    //                         // 2 = received NACK on transmit of address
-    //                         // 3 = received NACK on transmit of data
-    //                         // 4 = other error
+    Serial.print("Error writing data, error code: ");
+    Serial.println(error);  // Error codes:
+                            // 0 = success
+                            // 1 = data too long to fit in transmit buffer
+                            // 2 = received NACK on transmit of address
+                            // 3 = received NACK on transmit of data
+                            // 4 = other error
   }
 }
 
 //Init Module, Setup IO Board
 void SplitFlapModule::init() {
 
-  // uint16_t initState = 0b1111111110000111; // Pin 15 (17) as INPUT, Pins 3-6 as OUTPUT
-
   uint16_t initState = 0b1111111111100001; // Pin 15 (17) as INPUT, Pins 1-4 as OUTPUT
   writeIO(initState);
 
   stop(); //Write all motor coil inputs LOW
-  
+
+  int initDelay = 100;
+
+  delay(initDelay);
+  step();
+  delay(initDelay);
+  step();
+  delay(initDelay);
+  step();
+  delay(initDelay);
+  step();
+  delay(initDelay);
+
+  stop();
+
   //Generate Character Position Array
   float stepSize = (float)stepsPerRotation / (float)numChars;
   float currentPosition = 0;
@@ -68,14 +80,11 @@ int SplitFlapModule::getCharPosition(char inputChar) {
             return charPositions[i];
         }
     }
-    return -1;  // Character not found
+    return 0;  // Character not found, return blank
 }
 
 void SplitFlapModule::stop() {
-  // IO.digitalWrite(motorPins[0], LOW);   
-  // IO.digitalWrite(motorPins[1], LOW);   
-  // IO.digitalWrite(motorPins[2], LOW);   
-  // IO.digitalWrite(motorPins[3], LOW);   
+
   uint16_t stepState = 0b1111111111100001;
   writeIO(stepState);
 }   
@@ -89,38 +98,18 @@ void SplitFlapModule::step(bool updatePosition) {
   uint16_t stepState;
   switch(stepNumber){
     case 0:
-      // IO.digitalWrite(motorPins[0], LOW);   
-      // IO.digitalWrite(motorPins[1], LOW);   
-      // IO.digitalWrite(motorPins[2], HIGH);   
-      // IO.digitalWrite(motorPins[3], HIGH);   
-      // stepState = 0b1111111110011111;
       stepState = 0b1111111111100111;
       writeIO(stepState);
       break;
     case 1:
-      // IO.digitalWrite(motorPins[0],HIGH);
-      // IO.digitalWrite(motorPins[1],LOW);
-      // IO.digitalWrite(motorPins[2],LOW);
-      // IO.digitalWrite(motorPins[3],HIGH);
-      // stepState = 0b1111111111001111;
       stepState = 0b1111111111110011;
       writeIO(stepState);
       break;
     case 2:
-      // IO.digitalWrite(motorPins[0], HIGH);   
-      // IO.digitalWrite(motorPins[1], HIGH);   
-      // IO.digitalWrite(motorPins[2], LOW);   
-      // IO.digitalWrite(motorPins[3], LOW); 
-      // stepState = 0b1111111111100111;
       stepState = 0b1111111111111001;
       writeIO(stepState);
       break;
     case 3:
-      // IO.digitalWrite(motorPins[0], LOW);   
-      // IO.digitalWrite(motorPins[1], HIGH);   
-      // IO.digitalWrite(motorPins[2], HIGH);   
-      // IO.digitalWrite(motorPins[3], LOW);   
-      // stepState = 0b1111111110110111;
       stepState = 0b1111111111101101;
       writeIO(stepState);
       break;
@@ -148,7 +137,6 @@ bool SplitFlapModule::readHallEffectSensor(){
 
   }
   return false;
-  // return IO.digitalRead(HallEffectPIN);
 }
 
 

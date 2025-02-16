@@ -5,23 +5,26 @@
 #include <Arduino.h>
 #include "SplitFlapModule.h"
 
-#define MAX_MODULES 10 //for memory allocation, update if more modules
+#define MAX_MODULES 8 //for memory allocation, update if more modules
 
 class SplitFlapDisplay {
   public:
 
     SplitFlapDisplay(); //Constructor
     void init();
-    void write(String inputString); //Move all modules at once to show a specific string
-    void moveTo(int targetPositions[], bool releaseMotors = true);
-    void home();
+    void writeString(String inputString,bool centering=true,float speed=15); //Move all modules at once to show a specific string
+    void writeChar(char inputChar); //sets all modules to a single char
+    void moveTo(int targetPositions[], float speed = 15, bool releaseMotors = true);
+    void home(); //move home
+    void homeToString(String homeString); //moves home and then writes a string
+    void homeToChar(char homeChar); //moves home and then sets all modules to a char
     void testAll();
     void testCount();
     void testRandom();
-    void runMotors();
+    int getNumModules() { return numModules; }
     
   private:
-    
+    bool checkAllFalse(bool array[], int size);
     void stopMotors();
     void startMotors();
 
@@ -33,7 +36,7 @@ class SplitFlapDisplay {
     static const float maxVel; //Max Velocity In RPM
     float maxStepsPerSecond; //calculated from maxVel
     static const int stepsPerRotation; //number of motor steps per full rotation of character drum
-
+    static const int magnetPosition; //position of drum wheel when magnet is detected
     static const int SDAPin;      // SDA pin
     static const int SCLPin;      // SCL pin
   

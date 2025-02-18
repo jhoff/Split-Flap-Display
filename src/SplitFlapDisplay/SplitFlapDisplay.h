@@ -6,21 +6,22 @@
 #include "SplitFlapModule.h"
 
 #define MAX_MODULES 8 //for memory allocation, update if more modules
+#define MAX_RPM 15.0f
 
 class SplitFlapDisplay {
   public:
 
     SplitFlapDisplay(); //Constructor
     void init();
-    void writeString(String inputString,bool centering=true,float speed=15); //Move all modules at once to show a specific string
-    void writeChar(char inputChar); //sets all modules to a single char
-    void moveTo(int targetPositions[], float speed = 15, bool releaseMotors = true);
-    void home(); //move home
-    void homeToString(String homeString); //moves home and then writes a string
-    void homeToChar(char homeChar); //moves home and then sets all modules to a char
+    void writeString(String inputString,float speed=MAX_RPM,bool centering=true); //Move all modules at once to show a specific string
+    void writeChar(char inputChar,float speed = MAX_RPM); //sets all modules to a single char
+    void moveTo(int targetPositions[], float speed = MAX_RPM, bool releaseMotors = true);
+    void home(float speed = MAX_RPM); //move home
+    void homeToString(String homeString,float speed = MAX_RPM,bool centering = true); //moves home and then writes a string
+    void homeToChar(char homeChar,float speed = MAX_RPM); //moves home and then sets all modules to a char
     void testAll();
     void testCount();
-    void testRandom();
+    void testRandom(float speed = MAX_RPM);
     int getNumModules() { return numModules; }
     
   private:

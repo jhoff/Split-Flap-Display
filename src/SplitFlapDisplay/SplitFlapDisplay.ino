@@ -18,6 +18,9 @@ void setup() {
 
   Serial.println("Init Display");
   display.init(); //Initialise Display, and All Modules Within
+
+  display.homeToString("");
+
   Serial.println("Init Web Server");
   webServer.init();
 
@@ -26,15 +29,15 @@ void setup() {
     webServer.startWebServer(); //Start Webserver
 
     if (display.getNumModules() == 8){
-      display.homeToString("Wifi Err");
+      display.writeString("Wifi Err");
     }
     else{
-      display.homeToChar('X');
+      display.writeChar('X');
     }
   }
   else{
     webServer.startWebServer(); //Start Webserver
-    display.homeToString("OK");
+    display.writeString("OK");
     delay(250);
     display.writeString("");
   }
@@ -82,23 +85,22 @@ void loop() {
 void singleInputMode(){
   String userInput = webServer.getInputString();
   if (userInput!=webServer.getWrittenString()){
-    display.writeString(userInput,webServer.getCentering());
+    display.writeString(userInput,MAX_RPM,webServer.getCentering());
     webServer.setWrittenString(userInput);
   }
 }
 
 void multiInputMode() {
   if (millis() - webServer.getLastSwitchMultiTime() > webServer.getMultiWordDelay()) {
-    webServer.setLastSwitchMultiTime(millis());
     //get user input, extract correct word from index using webserver counter, and display
     String userInput = webServer.getMultiInputString();
     String currWord = extractFromCSV(userInput,webServer.getMultiWordCurrentIndex());
     if (currWord!=webServer.getWrittenString()){
-      display.writeString(currWord,webServer.getCentering());
+      display.writeString(currWord,MAX_RPM,webServer.getCentering());
       webServer.setWrittenString(currWord);
     }
+    webServer.setLastSwitchMultiTime(millis());
     webServer.setMultiWordCurrentIndex((webServer.getMultiWordCurrentIndex()+1)%(webServer.getNumMultiWords()));
-    
   }
 }
 
@@ -142,7 +144,7 @@ void dateMode() {
     }
 
     if (outputString!=webServer.getWrittenString()){
-      display.writeString(outputString,false,10);
+      display.homeToString(outputString,10);
       webServer.setWrittenString(outputString);
     }
   }
@@ -190,7 +192,7 @@ void timeMode() {
     }
 
     if (outputString!=webServer.getWrittenString()){
-      display.writeString(outputString,false,10);
+      display.writeString(outputString,10,false);
       webServer.setWrittenString(outputString);
     }
   }

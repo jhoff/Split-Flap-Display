@@ -17,13 +17,13 @@ const uint8_t SplitFlapDisplay::moduleAddresses[] = {0x20,0x21,0x22,0x23,0x24,0x
 // 0x27  | H  | H  | H
 
 const int SplitFlapDisplay::magnetPosition = 730; //position of character drum when the magnet is detected, this sets position 0 to be the blank flap
-const int SplitFlapDisplay::moduleOffsets[] = {0,0,0,0,0,0,0,-15}; //Tuning offsets (55 steps per character) +ve values move backwards on the character drum, shift flaps upwards
+const int SplitFlapDisplay::moduleOffsets[] = {0,0,-5,10,5,0,0,-15}; //Tuning offsets (55 steps per character) +ve values move backwards on the character drum, shift flaps upwards
 
 const int SplitFlapDisplay::SDAPin = 8;                         // SDA pin
 const int SplitFlapDisplay::SCLPin = 9;                         // SCL pin
 
 const int SplitFlapDisplay::stepsPerRotation = 2048;   //Number of stepper steps per 1 revolution of the motor, gear ratio is 1:1 to char drum
-const float SplitFlapDisplay::maxVel = 15;            //Max Rotations Per Minute
+const float SplitFlapDisplay::maxVel = MAX_RPM;            //Max Rotations Per Minute
 
 SplitFlapDisplay::SplitFlapDisplay() { //Constructor
 
@@ -41,8 +41,6 @@ void SplitFlapDisplay::init() {
   for (uint8_t i = 0; i < numModules; i++) {
     modules[i].init();
   } 
-  //Calculated Atributes
-  maxStepsPerSecond = (maxVel/60) * stepsPerRotation;
 
 }
  
@@ -69,7 +67,7 @@ void SplitFlapDisplay::testAll() {
 
 }
 
-void SplitFlapDisplay::testRandom() {
+void SplitFlapDisplay::testRandom(float speed) {
   char testChars[37] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
   int targetPositions[numModules];
@@ -82,7 +80,7 @@ void SplitFlapDisplay::testRandom() {
     Serial.print(randChar);
   }
   Serial.println(" ");
-  moveTo(targetPositions);
+  moveTo(targetPositions,speed);
 
 }
 
@@ -109,60 +107,60 @@ void SplitFlapDisplay::testCount() {
   } 
 }
 
-void SplitFlapDisplay::home() {
+void SplitFlapDisplay::home(float speed) {
   Serial.println("Homing");
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) { 
     targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
   }
   startMotors();
-  moveTo(targetPositions,15,false);
+  moveTo(targetPositions,speed,false);
   char homeChar = ' ';
   int charPosition;
   for (int i = 0; i < numModules; i++) { 
     targetPositions[i] = modules[i].getCharPosition(homeChar);
   }
-  moveTo(targetPositions);
+  moveTo(targetPositions,speed);
 }
 
-void SplitFlapDisplay::homeToString(String homeString) {
+void SplitFlapDisplay::homeToString(String homeString,float speed,bool centering) {
   Serial.println("Homing");
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) { 
     targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
   }
   startMotors();
-  moveTo(targetPositions,15,false);
-  writeString(homeString);
+  moveTo(targetPositions,speed,false);
+  writeString(homeString,speed,centering);
 }
 
-void SplitFlapDisplay::homeToChar(char homeChar) {
+void SplitFlapDisplay::homeToChar(char homeChar,float speed) {
   Serial.println("Homing");
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) { 
     targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
   }
   startMotors();
-  moveTo(targetPositions,15,false);
+  moveTo(targetPositions,speed,false);
 
   for (int i = 0; i < numModules; i++) {
     targetPositions[i] = modules[i].getCharPosition(homeChar);
   }
-  moveTo(targetPositions);
+  moveTo(targetPositions,true,speed);
 }
 
-void SplitFlapDisplay::writeChar(char inputChar) {
+void SplitFlapDisplay::writeChar(char inputChar,float speed) {
 
   int targetPositions[numModules];
   // Iterate through the input string and process each character
   for (int i = 0; i < numModules; i++) {
     targetPositions[i] = modules[i].getCharPosition(inputChar);
   }
-  moveTo(targetPositions);
+  moveTo(targetPositions,speed);
 
 }
 
-void SplitFlapDisplay::writeString(String inputString,bool centering,float speed) {
+void SplitFlapDisplay::writeString(String inputString,float speed,bool centering) {
 
   String displayString = inputString.substring(0, numModules);
   

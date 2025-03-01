@@ -5,7 +5,7 @@
 // Enter SplitFlapDisplay.cpp to alter number of modules, and set addresses
 // Enjoy :)
 
-#include "Arduino.h" 
+#include "Arduino.h"
 #include "SplitFlapDisplay.h"
 #include "SplitFlapWebServer.h"
 
@@ -41,7 +41,7 @@ void setup() {
     delay(250);
     display.writeString("");
   }
-  
+
 }
 
 void loop() {
@@ -73,7 +73,7 @@ void loop() {
     }
     default:
       break;
-  } 
+  }
 
   checkConnection();
 

@@ -51,10 +51,10 @@ String SplitFlapWebServer::getDayPrefix(int n) {
 
     // Get full weekday name
     char fullDay[10];  // Buffer for full day name
-    strftime(fullDay, sizeof(fullDay), "%A", &timeinfo);  
+    strftime(fullDay, sizeof(fullDay), "%A", &timeinfo);
 
     // Extract first n characters
-    char dayPrefix[n + 1];  
+    char dayPrefix[n + 1];
     strncpy(dayPrefix, fullDay, n);
     dayPrefix[n] = '\0';  // Null-terminate the string
 
@@ -70,10 +70,10 @@ String SplitFlapWebServer::getMonthPrefix(int n) {
 
     // Get full month name
     char fullMonth[10];  // Buffer for full month name
-    strftime(fullMonth, sizeof(fullMonth), "%B", &timeinfo);  
+    strftime(fullMonth, sizeof(fullMonth), "%B", &timeinfo);
 
     // Extract first n characters
-    char monthPrefix[n + 1];  
+    char monthPrefix[n + 1];
     strncpy(monthPrefix, fullMonth, n);
     monthPrefix[n] = '\0';  // Null-terminate the string
 
@@ -138,19 +138,19 @@ bool SplitFlapWebServer::loadWiFiCredentials() {
 }
 
 bool SplitFlapWebServer::connectToWifi(){
-    
+
   if (loadWiFiCredentials()){
-    unsigned long startAttemptTime = millis(); 
+    unsigned long startAttemptTime = millis();
     const unsigned long timeout = 10000;       //timeout
     unsigned long lastPrintTime = startAttemptTime;
 
     while (WiFi.status() != WL_CONNECTED) {
-        if (millis() - startAttemptTime >= timeout) { 
+        if (millis() - startAttemptTime >= timeout) {
             Serial.println("_");
             Serial.println("Wi-Fi connection failed! Timeout reached.");
             return false; // Return false if unable to connect in 30 seconds
         }
-        if ((millis() - lastPrintTime) > 1000) { 
+        if ((millis() - lastPrintTime) > 1000) {
           Serial.print(".");
           lastPrintTime = millis();
         }
@@ -165,7 +165,7 @@ bool SplitFlapWebServer::connectToWifi(){
     Serial.println("o");
     Serial.println("Connected to Wi-Fi!");
     Serial.println(WiFi.localIP()); // Print IP address
-    return true; 
+    return true;
   }
 }
 
@@ -188,7 +188,7 @@ void SplitFlapWebServer::startWebServer(){
     }
   }
   Serial.println("mDNS responder started");
-  
+
   if(!LittleFS.begin()){
     Serial.println("An Error has occurred while mounting LittleFS");
     return;
@@ -230,10 +230,10 @@ void SplitFlapWebServer::startWebServer(){
 
   // Handle the form POST request
   server.on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request){
-    
+
     if (request->hasParam("inputType", true)) {
       String inputType = decodeURIComponent(request->getParam("inputType", true)->value());
-      
+
       centering = (request->getParam("centering", true)->value().toInt());
       // Serial.println(centering);
 
@@ -255,7 +255,7 @@ void SplitFlapWebServer::startWebServer(){
           float delay = (request->getParam("delay", true)->value().toFloat());
           // Serial.println("Delay: " + String(delay));
           this->setMultiDelay(int(delay*1000));
-        }    
+        }
         this->setLastSwitchMultiTime(0); //force first word to appear instantly, rather than delay
         this->setMode(1);//change mode last once all variables updated
       }
@@ -287,8 +287,12 @@ void SplitFlapWebServer::startWebServer(){
         Serial.println("Random Mode");
         this->setMode(5);
       }
+      else if (selectedMode == "TestAll"){
+        Serial.println("Test All");
+        this->setMode(6);
+      }
     }
-  
+
     if (request->hasParam("ssid", true) && request->hasParam("password", true)) { //wifi settings page
       String ssid = decodeURIComponent(request->getParam("ssid", true)->value());
       String password = decodeURIComponent(request->getParam("password", true)->value());

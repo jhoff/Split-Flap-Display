@@ -71,6 +71,10 @@ void loop() {
       randomTest();
       break;
     }
+    case 6: {//Test All Mode
+      testAll();
+      break;
+    }
     default:
       break;
   } 
@@ -196,6 +200,10 @@ void timeMode() {
       webServer.setWrittenString(outputString);
     }
   }
+}
+
+void testAll(){
+  display.testAll();
 }
 
 void randomTest(){

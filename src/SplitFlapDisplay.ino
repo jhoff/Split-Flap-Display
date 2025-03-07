@@ -2,7 +2,7 @@
 // Morgan Manly
 // 16/02/2025
 
-// Enter SplitFlapDisplay.cpp to alter number of modules, and set addresses
+// Edit config.dist.h to alter number of modules, and set addresses
 // Enjoy :)
 
 #include "Arduino.h"
@@ -14,7 +14,7 @@ SplitFlapWebServer webServer; //Create Webserver Object
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(460800);
 
   Serial.println("Init Display");
   display.init(); //Initialise Display, and All Modules Within
@@ -45,7 +45,6 @@ void setup() {
 }
 
 void loop() {
-
   // check what mode the display is in, this value is updated by the web server
   switch (webServer.getMode()) {
     case 0: { //single input mode

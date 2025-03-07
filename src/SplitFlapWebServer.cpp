@@ -1,5 +1,11 @@
 #include "SplitFlapWebServer.h"
 
+#if __has_include("config.h")
+  #include "config.h"
+#else
+  #include "config.dist.h"
+#endif
+
 //Constructor
 SplitFlapWebServer::SplitFlapWebServer() : server(80), multiWordDelay(1000),attemptReconnect(false),multiWordCurrentIndex(0), numMultiWords(0)
 ,wifiCheckInterval(1000),connectionMode(0),mode(0),checkDateInterval(250),centering(1) {
@@ -7,16 +13,12 @@ SplitFlapWebServer::SplitFlapWebServer() : server(80), multiWordDelay(1000),atte
 }
 
 void SplitFlapWebServer::init() {
-
-  // NTP Server
-  const char* ntpServer = "pool.ntp.org";
-  // UK timezone (with automatic daylight saving adjustment)
-  const char* tzInfo = "GMT0BST,M3.5.0/1,M10.5.0";  // UK: GMT in winter, BST (UTC+1) in summer
+  const char* ntpServer = NTP_SERVER;
+  const char* tzInfo = TZ_INFO;
 
   configTzTime(tzInfo, ntpServer);
 
   mode = readMode(); //read last mode from memory
-
 }
 
 //Totally didn't use AI to make these functions
@@ -307,11 +309,8 @@ void SplitFlapWebServer::startWebServer(){
     request->send(200, "application/json", "{\"message\":\"Text updated successfully\"}"); // Send JSON response
   });
 
-  // Start the server
   server.begin();
-
 }
-
 
 String SplitFlapWebServer::decodeURIComponent(String encodedString) {
   String decodedString = encodedString;

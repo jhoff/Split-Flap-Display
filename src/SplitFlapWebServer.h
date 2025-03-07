@@ -6,7 +6,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>  //by ESP32Async, Requires AsyncTCP by ESP32Async
 #include <ESPmDNS.h>
-#include "LittleFS.h" // also using a plugin to upload files https://github.com/earlephilhower/arduino-littlefs-upload
+#include "LittleFS.h" // use `pio run -t uploadfs` to upload file system
 #include <Preferences.h> //for ssid, pass, mode
 #include "time.h" //for network time protocol
 
@@ -87,7 +87,7 @@ class SplitFlapWebServer {
     int wifiCheckInterval;
     AsyncWebServer server; // Declare server as a class member
     Preferences preferences; // For storing ssid, password, mode, written string
-  
+
 };
 #endif
 //          __

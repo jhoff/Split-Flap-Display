@@ -1,12 +1,16 @@
-#include "config.h"
 #include "SplitFlapDisplay.h"
 #include "SplitFlapModule.h"
 
-// Edit these values in config.h
+#if __has_include("config.h")
+  #include "config.h"
+#else
+  #include "config.dist.h"
+#endif
+
 const int SplitFlapDisplay::numModules = NUM_MODULES;
-const uint8_t* SplitFlapDisplay::moduleAddresses = MODULE_ADDRESSES;
+const uint8_t SplitFlapDisplay::moduleAddresses[] = MODULE_ADDRESSES;
 const int SplitFlapDisplay::magnetPosition = MAGNET_POSITION;
-const int* SplitFlapDisplay::moduleOffsets = MODULE_OFFSETS;
+const int SplitFlapDisplay::moduleOffsets[] = MODULE_OFFSETS;
 const int SplitFlapDisplay::SDAPin = SDA_PIN;
 const int SplitFlapDisplay::SCLPin = SCL_PIN;
 const int SplitFlapDisplay::stepsPerRotation = STEPS_PER_ROTATION;

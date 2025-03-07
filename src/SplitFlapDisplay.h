@@ -4,7 +4,6 @@
 
 #include <Arduino.h>
 #include "SplitFlapModule.h"
-#include "config.h"
 
 #define MAX_MODULES 8 //for memory allocation, update if more modules
 #define MAX_RPM 15.0f
@@ -32,8 +31,8 @@ class SplitFlapDisplay {
 
     static const int numModules;             // Number of modules in the display
     SplitFlapModule modules[MAX_MODULES];   // Array of SplitFlapModule objects, size of array is maximum number of modules allowed in class
-    static const int* moduleOffsets;
-    static const uint8_t* moduleAddresses;
+    static const int moduleOffsets[];
+    static const uint8_t moduleAddresses[];
 
     static const float maxVel; //Max Velocity In RPM
     float maxStepsPerSecond; //calculated from maxVel

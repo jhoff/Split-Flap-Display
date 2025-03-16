@@ -7,6 +7,8 @@ const char SplitFlapModule::chars[37] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
 const int SplitFlapModule::numChars = sizeof(SplitFlapModule::chars) / sizeof(SplitFlapModule::chars[0]);
 int SplitFlapModule::charPositions[37]; //to be written in init function
 
+bool hasErrored = false;
+
 // Not used but useful to have
 // const int SplitFlapModule::motorPins[] = {P06, P05, P04, P03}; // List of pins to set as OUTPUT
 // const int SplitFlapModule::HallEffectPIN = P17; //Input pin for Hall effect sensor
@@ -29,10 +31,12 @@ void SplitFlapModule::writeIO(uint16_t data) {
   Wire.write((data >> 8) & 0xFF); // Send upper byte
 
   byte error = Wire.endTransmission();
-  if (error == 0) {
-    // Serial.println("Data written successfully.");
-  } else {
-    Serial.print("Error writing data, error code: ");
+
+  if (error > 0 && ! hasErrored) {
+    hasErrored = true; // Set the error flag
+    Serial.print("Error writing data to module ");
+    Serial.print(address);
+    Serial.print(", error code: ");
     Serial.println(error);  // Error codes:
                             // 0 = success
                             // 1 = data too long to fit in transmit buffer
@@ -87,7 +91,7 @@ void SplitFlapModule::stop() {
 
   uint16_t stepState = 0b1111111111100001;
   writeIO(stepState);
-}   
+}
 
 void SplitFlapModule::start() {
   stepNumber = (stepNumber + 3) % 4; //effectively take one off stepNumber
@@ -123,12 +127,16 @@ void SplitFlapModule::step(bool updatePosition) {
 
 bool SplitFlapModule::readHallEffectSensor(){
 
+  if (hasErrored) {
+    return false;
+  }
+
   uint8_t requestBytes = 2;
   Wire.requestFrom(address, requestBytes);
   // Make sure the data is available
   if (Wire.available() == 2) {
     uint16_t inputState = 0;
-    
+
     // Read the two bytes and combine them into a 16-bit value
     inputState = Wire.read();            // Read the lower byte
     inputState |= (Wire.read() << 8);    // Read the upper byte and shift it left
@@ -138,7 +146,3 @@ bool SplitFlapModule::readHallEffectSensor(){
   }
   return false;
 }
-
-
-
-

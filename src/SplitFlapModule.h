@@ -24,12 +24,15 @@ class SplitFlapModule {
     bool readHallEffectSensor(); //return the value read by the hall effect sensor
     void magnetDetected() { position = magnetPosition; } //update position to magnetposition, called when magnet is detected
 
+    bool getHasErrored() const { return hasErrored; }
+
   private:
 
     uint8_t address; //i2c address of module
     int position; //character drum position
     int stepNumber; //current position in the stepping order, to make motor move
     int stepsPerRotation; //number of steps per rotation
+    bool hasErrored = false; // flag to indicate if an error has occurred
 
     void writeIO(uint16_t data); //write to motor in pins
 

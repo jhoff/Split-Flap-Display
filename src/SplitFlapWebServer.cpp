@@ -6,6 +6,14 @@
   #include "config.dist.h"
 #endif
 
+#ifndef WIFI_SSID
+  #define WIFI_SSID ""
+#endif
+
+#ifndef WIFI_PASS
+  #define WIFI_PASS ""
+#endif
+
 //Constructor
 SplitFlapWebServer::SplitFlapWebServer() : server(80), multiWordDelay(1000),attemptReconnect(false),multiWordCurrentIndex(0), numMultiWords(0)
 ,wifiCheckInterval(1000),connectionMode(0),mode(0),checkDateInterval(250),centering(1) {
@@ -125,59 +133,70 @@ void SplitFlapWebServer::checkWiFi() {
 
 bool SplitFlapWebServer::loadWiFiCredentials() {
     preferences.begin("wifi", true);  // Open the preferences for Wi-Fi with read-only access
-    String ssid = preferences.getString("ssid", "");  // Retrieve SSID, default empty if not found
-    String password = preferences.getString("password", "");  // Retrieve password, default empty if not found
+    String ssid = preferences.getString("ssid", String(WIFI_SSID));  // Retrieve SSID, default empty if not found
+    String password = preferences.getString("password", String(WIFI_PASS));  // Retrieve password, default empty if not found
     preferences.end();
 
     if (ssid != "" && password != "") {
         Serial.println("Wi-Fi credentials loaded successfully.");
         Serial.print("Connecting to Network: ");
-        Serial.print(ssid);
+        Serial.println(ssid);
+        WiFi.mode(WIFI_STA);
+        #ifdef WIFI_TX_POWER
+          delay(100);
+          WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
+        #endif
         WiFi.begin(ssid.c_str(), password.c_str());
         return true;  // Return true if credentials exist
     }
     return false;  // Return false if no credentials were found
 }
 
-bool SplitFlapWebServer::connectToWifi(){
 
-  if (loadWiFiCredentials()){
+bool SplitFlapWebServer::connectToWifi() {
+  if (loadWiFiCredentials()) {
+
     unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 10000;       //timeout
+    const unsigned long timeout = 10000; // 10 seconds
     unsigned long lastPrintTime = startAttemptTime;
 
     while (WiFi.status() != WL_CONNECTED) {
-        if (millis() - startAttemptTime >= timeout) {
-            Serial.println("_");
-            Serial.println("Wi-Fi connection failed! Timeout reached.");
-            return false; // Return false if unable to connect in 30 seconds
-        }
-        if ((millis() - lastPrintTime) > 1000) {
-          Serial.print(".");
-          lastPrintTime = millis();
-        }
-        yield();
+      if (millis() - startAttemptTime >= timeout) {
+        Serial.println("_");
+        Serial.println("Wi-Fi connection failed! Timeout reached.");
+        return false; // Return false if unable to connect in 30 seconds
+      }
+      if ((millis() - lastPrintTime) > 1000) {
+        Serial.print(".");
+        lastPrintTime = millis();
+      }
+      yield();
     }
+
     //connected succesfully
     connectionMode = 1;
     WiFi.softAPdisconnect();  // Turns off SoftAP mode only after connected to actual network
     WiFi.setAutoReconnect(true);
     WiFi.persistent(true);  //Saves Wi-Fi settings to flash memory
     WiFi.setSleep(false);
-    Serial.println("o");
     Serial.println("Connected to Wi-Fi!");
-    Serial.println(WiFi.localIP()); // Print IP address
+    Serial.println("IP Address: http://" + WiFi.localIP().toString()); // Print IP address
     return true;
   }
+  return false;
 }
 
 void SplitFlapWebServer::startAccessPoint() {
   connectionMode = 0;
   const char* apSSID = "Split Flap Display";
   WiFi.softAP(apSSID);
+  #ifdef WIFI_TX_POWER
+    delay(100);
+    WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
+  #endif
   Serial.println("AP Mode Started!");
   Serial.println("Connect to: " + String(apSSID));
-  Serial.println("AP IP Address: " + WiFi.softAPIP().toString());
+  Serial.println("AP IP Address: http://" + WiFi.softAPIP().toString());
 }
 
 void SplitFlapWebServer::startWebServer(){

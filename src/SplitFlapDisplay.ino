@@ -14,7 +14,7 @@ SplitFlapWebServer webServer; //Create Webserver Object
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(460800);
+  Serial.begin(SERIAL_SPEED);
 
   Serial.println("Init Display");
   display.init(); //Initialise Display, and All Modules Within
@@ -23,6 +23,10 @@ void setup() {
 
   Serial.println("Init Web Server");
   webServer.init();
+
+  #ifdef STARTUP_DELAY
+    delay(STARTUP_DELAY);
+  #endif
 
   if (!webServer.connectToWifi()) {
     webServer.startAccessPoint();
@@ -45,6 +49,7 @@ void setup() {
 }
 
 void loop() {
+
   // check what mode the display is in, this value is updated by the web server
   switch (webServer.getMode()) {
     case 0: { //single input mode

@@ -23,16 +23,17 @@ class SplitFlapDisplay {
     void testCount();
     void testRandom(float speed = MAX_RPM);
     int getNumModules() { return numModules; }
-    
+
   private:
     bool checkAllFalse(bool array[], int size);
     void stopMotors();
     void startMotors();
 
-    static const int numModules;             // Number of modules in the display 
+    static const int numModules;             // Number of modules in the display
     SplitFlapModule modules[MAX_MODULES];   // Array of SplitFlapModule objects, size of array is maximum number of modules allowed in class
-    static const int moduleOffsets[MAX_MODULES];
-    static const uint8_t moduleAddresses[MAX_MODULES];
+    static const int moduleOffsets[];
+    static const int displayOffset;
+    static const uint8_t moduleAddresses[];
 
     static const float maxVel; //Max Velocity In RPM
     float maxStepsPerSecond; //calculated from maxVel
@@ -40,7 +41,7 @@ class SplitFlapDisplay {
     static const int magnetPosition; //position of drum wheel when magnet is detected
     static const int SDAPin;      // SDA pin
     static const int SCLPin;      // SCL pin
-  
+
 };
 
 #endif

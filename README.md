@@ -10,10 +10,10 @@ Firmware for the modular Split Flap Display created by Morgan Manly
 - Web Interface To Switch Between Operation Modes, modes include custom input, date mode, time mode
 
 ## Supported boards
-| Model              | Manufacturer | Platform | Environment               |
-| ------------------ | ------------ | -------- | ------------------------- |
-| ESP32-C3-SuperMini | Generic      | ESP32    | `esp32_c3_supermini` (default) |
-| ESP32-S3-Zero      | Waveshare    | ESP32    | `waveshare_esp32_s3_zero` |
+| Environment          | Processor     | Tested Boards                                                |
+| -------------------- | ------------- | ------------------------------------------------------------ |
+| `esp32_c3` (default) | ESP32-C3FN4   | Teyleten Robot ESP32-C3-SuperMini<br>Waveshare ESP32-C3-Zero |
+| `esp32_s3`           | ESP32-S3FH4R2 | Waveshare ESP32-S3-Zero                                      |
 
 ## Setup Instructions
 

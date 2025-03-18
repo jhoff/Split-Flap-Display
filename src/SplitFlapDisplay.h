@@ -32,6 +32,7 @@ class SplitFlapDisplay {
     static const int numModules;             // Number of modules in the display
     SplitFlapModule modules[MAX_MODULES];   // Array of SplitFlapModule objects, size of array is maximum number of modules allowed in class
     static const int moduleOffsets[];
+    static const int displayOffset;
     static const uint8_t moduleAddresses[];
 
     static const float maxVel; //Max Velocity In RPM

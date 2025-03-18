@@ -25,6 +25,7 @@
 
 #define MAGNET_POSITION 730; //position of character drum when the magnet is detected, this sets position 0 to be the blank flap
 #define MODULE_OFFSETS {0, 0, 0, 0, 0, 0, 0, 0}; //Tuning offsets (55 steps per character) +ve values move backwards on the character drum, shift flaps upwards
+#define DISPLAY_OFFSET 0; //Offset for all modules, for final adjustment
 
 #define SDA_PIN 8; // SDA pin
 #define SCL_PIN 9; // SCL pin

@@ -11,6 +11,7 @@ const int SplitFlapDisplay::numModules = NUM_MODULES;
 const uint8_t SplitFlapDisplay::moduleAddresses[] = MODULE_ADDRESSES;
 const int SplitFlapDisplay::magnetPosition = MAGNET_POSITION;
 const int SplitFlapDisplay::moduleOffsets[] = MODULE_OFFSETS;
+const int SplitFlapDisplay::displayOffset = DISPLAY_OFFSET;
 const int SplitFlapDisplay::SDAPin = SDA_PIN;
 const int SplitFlapDisplay::SCLPin = SCL_PIN;
 const int SplitFlapDisplay::stepsPerRotation = STEPS_PER_ROTATION;
@@ -20,7 +21,12 @@ SplitFlapDisplay::SplitFlapDisplay() { //Constructor
 
   // Initialize each SplitFlapModule object with the correct address
   for (uint8_t i = 0; i < numModules; i++) {
-    modules[i] = SplitFlapModule(moduleAddresses[i],stepsPerRotation,moduleOffsets[i],magnetPosition);
+    modules[i] = SplitFlapModule(
+      moduleAddresses[i],
+      stepsPerRotation,
+      moduleOffsets[i] + displayOffset,
+      magnetPosition
+    );
   }
 }
 

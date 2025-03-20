@@ -16,6 +16,10 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 - Pre-built firmware releases with web-based firmware update via [esptool-js](https://espressif.github.io/esptool-js/docs/index.html)
 - Optional basic json API endpoint to update display remotely
 - [ESPHome](https://esphome.io) support
+- Support multi-character modules ( each I/O expander board can drive up to 3 motor / sensor pairs )
+- Support multiple i2c busses
+- Support for i2c multiplexer expansion
+- Option to have messages complete at the same time ( delayed start )
 
 ## Supported boards
 | Environment          | Processor     | Tested Boards                                                |

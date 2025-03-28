@@ -24,7 +24,7 @@ JsonSettings settings = JsonSettings("config", {
     {"displayOffset", JsonSetting(0)},
     {"sdaPin", JsonSetting(8)},
     {"sclPin", JsonSetting(9)},
-    {"stepsPerRotation", JsonSetting(2048)},
+    {"stepsPerRot", JsonSetting(2048)},
     {"maxVel", JsonSetting(15.0f)},
     // Operational States
     {"mode", JsonSetting(0)}

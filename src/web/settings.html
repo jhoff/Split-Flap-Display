@@ -44,7 +44,6 @@
                 type="text"
                 x-model="settings.name"
                 placeholder="Enter a name for this display"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -61,7 +60,6 @@
                 type="text"
                 x-model="settings.mdns"
                 placeholder="Enter mDNS hostname"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -77,7 +75,6 @@
                 <select
                     class="w-full p-3 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                     x-model="settings.timezone"
-                    :disabled="loading.settings"
                 >
                     <template x-for="(name, zone) in timezones" :key="zone">
                         <option
@@ -132,7 +129,6 @@
                 type="text"
                 x-model="settings.ssid"
                 placeholder="WiFi SSID"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -147,7 +143,6 @@
                 type="password"
                 x-model="settings.password"
                 placeholder="WiFi Password"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -172,7 +167,6 @@
                 min="1"
                 max="8"
                 placeholder="1-8"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -189,7 +183,6 @@
                 type="text"
                 x-model="settings.moduleAddresses"
                 placeholder="Enter addresses"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -206,7 +199,6 @@
                 type="number"
                 x-model="settings.magnetPosition"
                 placeholder="Enter magnet position"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -223,7 +215,6 @@
                 type="text"
                 x-model="settings.moduleOffsets"
                 placeholder="Enter module offsets"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -240,7 +231,6 @@
                 type="number"
                 x-model="settings.displayOffset"
                 placeholder="Enter display offset"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -257,7 +247,6 @@
                 type="number"
                 x-model="settings.sdaPin"
                 placeholder="Enter SDA pin"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -274,7 +263,6 @@
                 type="number"
                 x-model="settings.sclPin"
                 placeholder="Enter SCL pin"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
@@ -283,20 +271,19 @@
                 x-text="errors.message"
             ></div>
 
-            <label for="stepsPerRotation" class="block text-left text-lg mt-4"
+            <label for="stepsPerRot" class="block text-left text-lg mt-4"
                 >Steps Per Rotation</label
             >
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
-                x-model="settings.stepsPerRotation"
+                x-model="settings.stepsPerRot"
                 placeholder="Enter steps per rotation"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
                 x-cloak
-                x-show="errors.key === 'stepsPerRotation'"
+                x-show="errors.key === 'stepsPerRot'"
                 x-text="errors.message"
             ></div>
 
@@ -309,7 +296,6 @@
                 step="0.1"
                 x-model="settings.maxVel"
                 placeholder="Enter max velocity"
-                :readonly="loading.settings"
             />
             <div
                 class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"

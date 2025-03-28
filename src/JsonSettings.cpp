@@ -117,14 +117,17 @@ bool JsonSettings::fromJson(JsonDocument settings) {
     case JsonSettingType::JST_STR:
       Serial.println("Setting key: " + String(key) +
                      " to value: " + kv.value().as<String>());
+      preferences.putString(key, kv.value().as<String>());
       break;
     case JsonSettingType::JST_INT:
       Serial.println("Setting key: " + String(key) +
                      " to value: " + String(kv.value().as<int>()));
+      preferences.putInt(key, kv.value().as<int>());
       break;
     case JsonSettingType::JST_FLOAT:
       Serial.println("Setting key: " + String(key) +
                      " to value: " + String(kv.value().as<float>()));
+      preferences.putFloat(key, kv.value().as<float>());
       break;
     }
   }

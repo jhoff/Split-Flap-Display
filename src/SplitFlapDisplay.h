@@ -47,9 +47,9 @@ private:
   int moduleOffsets[MAX_MODULES];
   int displayOffset;
 
-  float maxVel;         // Max Velocity In RPM
-  int stepsPerRotation; // number of motor steps per full rotation of character
-                        // drum
+  float maxVel;       // Max Velocity In RPM
+  int stepsPerRot;    // number of motor steps per full rotation of character
+                      // drum
   int magnetPosition; // position of drum wheel when magnet is detected
   int SDAPin;         // SDA pin
   int SCLPin;         // SCL pin

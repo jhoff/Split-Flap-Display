@@ -7,7 +7,7 @@ SplitFlapDisplay::SplitFlapDisplay(JsonSettings &settings)
 
 void SplitFlapDisplay::init() {
   numModules = settings.getInt("moduleCount");
-  stepsPerRotation = settings.getInt("stepsPerRotation");
+  stepsPerRot = settings.getInt("stepsPerRot");
   displayOffset = settings.getInt("displayOffset");
   magnetPosition = settings.getInt("magnetPosition");
   maxVel = settings.getFloat("maxVel");
@@ -31,7 +31,7 @@ void SplitFlapDisplay::init() {
 
   for (uint8_t i = 0; i < numModules; i++) {
     modules[i] =
-        SplitFlapModule(moduleAddresses[i], stepsPerRotation,
+        SplitFlapModule(moduleAddresses[i], stepsPerRot,
                         moduleOffsets[i] + displayOffset, magnetPosition);
   }
 
@@ -118,7 +118,7 @@ void SplitFlapDisplay::home(float speed) {
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) {
     targetPositions[i] =
-        (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
+        (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
   }
   startMotors();
   moveTo(targetPositions, speed, false);
@@ -136,7 +136,7 @@ void SplitFlapDisplay::homeToString(String homeString, float speed,
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) {
     targetPositions[i] =
-        (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
+        (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
   }
   startMotors();
   moveTo(targetPositions, speed, false);
@@ -148,7 +148,7 @@ void SplitFlapDisplay::homeToChar(char homeChar, float speed) {
   int targetPositions[numModules];
   for (int i = 0; i < numModules; i++) {
     targetPositions[i] =
-        (modules[i].getPosition() - 1 + stepsPerRotation) % stepsPerRotation;
+        (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
   }
   startMotors();
   moveTo(targetPositions, speed, false);
@@ -215,7 +215,7 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed,
   // TODO check length of array and return if empty
 
   speed = constrain(speed, 2, maxVel);
-  float stepsPerSecond = (speed / 60) * stepsPerRotation;
+  float stepsPerSecond = (speed / 60) * stepsPerRot;
   float timePerStep = 1000000 / stepsPerSecond;
 
   unsigned long currentTime = micros();
@@ -237,10 +237,9 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed,
       currentTime; // track when we last read all the hall effect sensors
 
   for (int i = 0; i < numModules; i++) {
-    targetPositions[i] =
-        constrain(targetPositions[i], 0,
-                  stepsPerRotation -
-                      1); // Constrain to avoid errors with incorrect inputs
+    targetPositions[i] = constrain(
+        targetPositions[i], 0,
+        stepsPerRot - 1); // Constrain to avoid errors with incorrect inputs
     resetLatches[i] = true;
     lastStepTimes[i] = currentTime;
     if (modules[i].getPosition() != targetPositions[i]) {

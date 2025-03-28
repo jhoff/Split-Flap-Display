@@ -2,10 +2,15 @@
   "name": "split-flap-display",
   "version": "1.0.0",
   "scripts": {
-    "build": "vite build --emptyOutDir",
+    "build": "npm run format && npm run assets && npm run pio",
     "format": "npm run format:cpp && npm run format:web",
     "format:web": "prettier --write 'src/**/*.{js,json,css,html}'",
-    "format:cpp": "find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i"
+    "format:cpp": "find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i",
+    "assets": "vite build --emptyOutDir",
+    "pio": "npm run pio:firmware && sleep 2 && npm run pio:filesystem",
+    "pio:firmware": "pio run -t upload",
+    "pio:filesystem": "pio run -t uploadfs",
+    "pio:monitor": "pio device monitor"
   },
   "devDependencies": {
     "alpinejs": "^3.14.9",

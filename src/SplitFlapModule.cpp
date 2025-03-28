@@ -22,16 +22,15 @@ bool hasErrored = false;
 
 // Default Constructor
 SplitFlapModule::SplitFlapModule()
-    : address(0), position(0), stepNumber(0),
-      stepsPerRotation(0) { // default values
-  magnetPosition = 710;     // sort of guessing
+    : address(0), position(0), stepNumber(0), stepsPerRot(0) { // default values
+  magnetPosition = 710; // sort of guessing
 }
 
 // Constructor implementation
 SplitFlapModule::SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation,
                                  int stepOffset, int magnetPos)
     : address(I2Caddress), position(0), stepNumber(0),
-      stepsPerRotation(stepsPerFullRotation) {
+      stepsPerRot(stepsPerFullRotation) {
   magnetPosition = magnetPos + stepOffset;
 }
 
@@ -80,7 +79,7 @@ void SplitFlapModule::init() {
   stop();
 
   // Generate Character Position Array
-  float stepSize = (float)stepsPerRotation / (float)numChars;
+  float stepSize = (float)stepsPerRot / (float)numChars;
   float currentPosition = 0;
   for (int i = 0; i < numChars; i++) {
     charPositions[i] = (int)currentPosition;
@@ -130,7 +129,7 @@ void SplitFlapModule::step(bool updatePosition) {
     break;
   }
   if (updatePosition) {
-    position = (position + 1) % stepsPerRotation;
+    position = (position + 1) % stepsPerRot;
     stepNumber = (stepNumber + 1) % 4;
   }
 }

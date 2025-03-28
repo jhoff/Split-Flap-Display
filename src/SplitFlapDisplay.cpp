@@ -1,25 +1,33 @@
 #include "SplitFlapDisplay.h"
 #include "SplitFlapModule.h"
+#include "JsonSettings.h"
 
-#if __has_include("config.h")
-  #include "config.h"
-#else
-  #include "config.dist.h"
-#endif
+SplitFlapDisplay::SplitFlapDisplay(JsonSettings& settings) : settings(settings) {}
 
-const int SplitFlapDisplay::numModules = NUM_MODULES;
-const uint8_t SplitFlapDisplay::moduleAddresses[] = MODULE_ADDRESSES;
-const int SplitFlapDisplay::magnetPosition = MAGNET_POSITION;
-const int SplitFlapDisplay::moduleOffsets[] = MODULE_OFFSETS;
-const int SplitFlapDisplay::displayOffset = DISPLAY_OFFSET;
-const int SplitFlapDisplay::SDAPin = SDA_PIN;
-const int SplitFlapDisplay::SCLPin = SCL_PIN;
-const int SplitFlapDisplay::stepsPerRotation = STEPS_PER_ROTATION;
-const float SplitFlapDisplay::maxVel = MAX_VEL;
+void SplitFlapDisplay::init() {
+  numModules = settings.getInt("moduleCount");
+  stepsPerRotation = settings.getInt("stepsPerRotation");
+  displayOffset = settings.getInt("displayOffset");
+  magnetPosition = settings.getInt("magnetPosition");
+  maxVel = settings.getFloat("maxVel");
 
-SplitFlapDisplay::SplitFlapDisplay() { //Constructor
+  std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
+  for (int i = 0; i < numModules; i++) {
+    moduleAddresses[i] = (uint8_t)settingAddresses[i];
+  }
 
-  // Initialize each SplitFlapModule object with the correct address
+  std::vector<int> settingOffsets = settings.getIntVector("moduleOffsets");
+  for (int i = 0; i < numModules; i++) {
+    moduleOffsets[i] = settingOffsets[i];
+  }
+
+  Serial.print("Module Offsets: ");
+  for (int i = 0; i < numModules; i++) {
+    Serial.print(moduleOffsets[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+
   for (uint8_t i = 0; i < numModules; i++) {
     modules[i] = SplitFlapModule(
       moduleAddresses[i],
@@ -28,17 +36,16 @@ SplitFlapDisplay::SplitFlapDisplay() { //Constructor
       magnetPosition
     );
   }
-}
 
-void SplitFlapDisplay::init() {
+  SDAPin = settings.getInt("sdaPin");
+  SCLPin = settings.getInt("sclPin");
 
-  Wire.begin(SDAPin,SCLPin);
+  Wire.begin(SDAPin, SCLPin);
   Wire.setClock(400000);
 
   for (uint8_t i = 0; i < numModules; i++) {
     modules[i].init();
   }
-
 }
 
 void SplitFlapDisplay::testAll() {

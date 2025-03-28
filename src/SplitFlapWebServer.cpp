@@ -1,10 +1,8 @@
 #include "SplitFlapWebServer.h"
+#include "AsyncJson.h"
+#include "ArduinoJson.h"
 
-#if __has_include("config.h")
-  #include "config.h"
-#else
-  #include "config.dist.h"
-#endif
+#define AP_SSID "Split Flap Display"
 
 #ifndef WIFI_SSID
   #define WIFI_SSID ""
@@ -15,18 +13,56 @@
 #endif
 
 //Constructor
-SplitFlapWebServer::SplitFlapWebServer() : server(80), multiWordDelay(1000),attemptReconnect(false),multiWordCurrentIndex(0), numMultiWords(0)
-,wifiCheckInterval(1000),connectionMode(0),mode(0),checkDateInterval(250),centering(1) {
+SplitFlapWebServer::SplitFlapWebServer(JsonSettings& settings)
+  : settings(settings),
+    server(80),
+    multiWordDelay(1000),
+    attemptReconnect(false),
+    multiWordCurrentIndex(0),
+    numMultiWords(0),
+    wifiCheckInterval(1000),
+    connectionMode(0),
+    checkDateInterval(250),
+    centering(1) {
   lastSwitchMultiTime = millis();
 }
 
 void SplitFlapWebServer::init() {
-  const char* ntpServer = NTP_SERVER;
-  const char* tzInfo = TZ_INFO;
+  if(! LittleFS.begin()){
+    Serial.println("An Error has occurred while mounting LittleFS");
+    return;
+  }
 
-  configTzTime(tzInfo, ntpServer);
+  setTimezone();
+}
 
-  mode = readMode(); //read last mode from memory
+void SplitFlapWebServer::setTimezone() {
+  const char* timezoneSetting = settings.getString("timezone").c_str();
+  const char* sntpServer = "pool.ntp.org";
+  const char* posixTimezone = "UTC0";
+
+  File file = LittleFS.open("/timezones.json", "r");
+  if (! file) {
+    Serial.println("Failed to open timezones.json; defaulting to UTC");
+    return configTzTime(posixTimezone, sntpServer);
+  }
+
+  size_t size = file.size();
+  std::unique_ptr<char[]> buffer(new char[size]);
+  file.readBytes(buffer.get(), size);
+  file.close();
+
+  JsonDocument timezones;
+  deserializeJson(timezones, buffer.get());
+
+  for (JsonPair kv : timezones.as<JsonObject>()) {
+    if (kv.key().c_str() == timezoneSetting) {
+      posixTimezone = kv.value().as<String>().c_str();
+      break;
+    }
+  }
+
+  configTzTime(posixTimezone, sntpServer);
 }
 
 //Totally didn't use AI to make these functions
@@ -102,24 +138,13 @@ String SplitFlapWebServer::getCurrentDay() {
     return String(dayStr);
 }
 
-int SplitFlapWebServer::readMode(){
-  preferences.begin("display", true);  // Open the preferences for Wi-Fi with write access
-  int lastMode = preferences.getInt("mode", 0);  // Retrieve SSID, default empty if not found
-  preferences.end();  // Close preferences
-  return lastMode;
-}
-
 void SplitFlapWebServer::setMode(int targetMode){
-  mode = targetMode;
-  preferences.begin("display", false);  // Open the preferences for Wi-Fi with write access
-  preferences.putInt("mode", targetMode); // Save Mode
-  preferences.end();  // Close preferences
+  settings.putInt("mode", targetMode);
 }
 
 int SplitFlapWebServer::getMode(){
-  return mode;
+  return settings.getInt("mode");
 }
-
 
 void SplitFlapWebServer::checkWiFi() {
   if (connectionMode == 1) {
@@ -132,10 +157,9 @@ void SplitFlapWebServer::checkWiFi() {
 }
 
 bool SplitFlapWebServer::loadWiFiCredentials() {
-    preferences.begin("wifi", true);  // Open the preferences for Wi-Fi with read-only access
-    String ssid = preferences.getString("ssid", String(WIFI_SSID));  // Retrieve SSID, default empty if not found
-    String password = preferences.getString("password", String(WIFI_PASS));  // Retrieve password, default empty if not found
-    preferences.end();
+    // Allow WIFI_SSID and WIFI_PASS to be overridden by compile-time definitions
+    String ssid = String(WIFI_SSID).isEmpty() ? settings.getString("ssid") : String(WIFI_SSID);
+    String password = String(WIFI_PASS).isEmpty() ? settings.getString("password") : String(WIFI_PASS);
 
     if (ssid != "" && password != "") {
         Serial.println("Wi-Fi credentials loaded successfully.");
@@ -157,7 +181,7 @@ bool SplitFlapWebServer::connectToWifi() {
   if (loadWiFiCredentials()) {
 
     unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 10000; // 10 seconds
+    const unsigned long timeout = 20000; // 20 seconds
     unsigned long lastPrintTime = startAttemptTime;
 
     while (WiFi.status() != WL_CONNECTED) {
@@ -180,7 +204,7 @@ bool SplitFlapWebServer::connectToWifi() {
     WiFi.persistent(true);  //Saves Wi-Fi settings to flash memory
     WiFi.setSleep(false);
     Serial.println("Connected to Wi-Fi!");
-    Serial.println("IP Address: http://" + WiFi.localIP().toString()); // Print IP address
+    Serial.println("IP Address: http://" + WiFi.localIP().toString());
     return true;
   }
   return false;
@@ -188,7 +212,7 @@ bool SplitFlapWebServer::connectToWifi() {
 
 void SplitFlapWebServer::startAccessPoint() {
   connectionMode = 0;
-  const char* apSSID = "Split Flap Display";
+  const char* apSSID = AP_SSID;
   WiFi.softAP(apSSID);
   #ifdef WIFI_TX_POWER
     delay(100);
@@ -199,134 +223,184 @@ void SplitFlapWebServer::startAccessPoint() {
   Serial.println("AP IP Address: http://" + WiFi.softAPIP().toString());
 }
 
-void SplitFlapWebServer::startWebServer(){
+void fourOhFour(AsyncWebServerRequest *request) {
+  Serial.println("Request: " + request->url());
+  Serial.println("Method: " + String(request->methodToString()));
+  request->send(404);
+}
 
-  // Initialize mDNS
-  if (!MDNS.begin("splitflap")) {   // Set the hostname to "esp32.local"
+
+void SplitFlapWebServer::endMDNS() {
+    MDNS.end();
+    Serial.println("mDNS responder stopped");
+}
+
+void SplitFlapWebServer::startMDNS() {
+  if (! MDNS.begin(settings.getString("mdns").c_str())) {
     Serial.println("Error setting up MDNS responder!");
     while(1) {
       delay(1000);
     }
   }
-  Serial.println("mDNS responder started");
 
-  if(!LittleFS.begin()){
-    Serial.println("An Error has occurred while mounting LittleFS");
+  Serial.println("mDNS: http://" + settings.getString("mdns") + ".local");
+}
+
+void SplitFlapWebServer::startWebServer(){
+  server.on("/", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    request->redirect("/index.html");
+  });
+
+  File root = LittleFS.open("/");
+  if (!root || !root.isDirectory()) {
+    Serial.println("Failed to open directory or not a directory");
     return;
   }
 
-  // Route to load style.css file
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/style.css", "text/css");
+  File file = root.openNextFile();
+  while (file) {
+    if (String(file.name()).endsWith(".gz")) {
+      const char* filename = file.name();
+      String tempFilename = (String("/") + String(filename));
+      tempFilename.replace(".gz", "");
+      filename = tempFilename.c_str();
+
+      server.serveStatic(filename, LittleFS, filename, "max-age=600");
+    }
+    file = root.openNextFile();
+  }
+
+  server.on("/settings", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    request->send(200, "application/json", settings.toJson().as<String>());
   });
 
-  server.on("/settings-script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(LittleFS, "/settings-script.js", "application/javascript");
+  server.on("/settings/reset", HTTP_POST, [this](AsyncWebServerRequest *request){
+    settings.reset();
+
+    JsonDocument response;
+    response["message"] = "Settings reset successfully! Reconnect to the " + String(AP_SSID) + " network";
+    response["persistent"] = true;
+
+    request->send(200, "application/json", response.as<String>());
+
+    this->attemptReconnect = true;
   });
 
-  server.on("/custom-text-script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(LittleFS, "/custom-text-script.js", "application/javascript");
-  });
-
-  server.on("/mode-script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(LittleFS, "/mode-script.js", "application/javascript");
-  });
-
-  // Route for root / web page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/index.html");
-  });
-
-  server.on("/custom-text", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/custom-text.html");
-  });
-
-  server.on("/mode", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/mode.html");
-  });
-
-  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/settings.html");
-  });
-
-  // Handle the form POST request
-  server.on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request){
-
-    if (request->hasParam("inputType", true)) {
-      String inputType = decodeURIComponent(request->getParam("inputType", true)->value());
-
-      centering = (request->getParam("centering", true)->value().toInt());
-      // Serial.println(centering);
-
-      if (inputType == "multiple" && request->hasParam("words", true)) {
-        String words = decodeURIComponent(request->getParam("words", true)->value());
-        Serial.println("Multi Words: " + words);
-
-        this->setMultiInputString(words);
-        //count how many words
-        int wordCount = 1;
-        for (int i = 0; i < words.length(); i++) {
-            if (words.charAt(i) == ',') {
-                wordCount++;
-            }
-        }
-        this->numMultiWords = wordCount;
-
-        if (request->hasParam("delay", true)) {
-          float delay = (request->getParam("delay", true)->value().toFloat());
-          // Serial.println("Delay: " + String(delay));
-          this->setMultiDelay(int(delay*1000));
-        }
-        this->setLastSwitchMultiTime(0); //force first word to appear instantly, rather than delay
-        this->setMode(1);//change mode last once all variables updated
-      }
-
-      else if (inputType == "single" && request->hasParam("word", true)) {
-          String word = decodeURIComponent(request->getParam("word", true)->value());
-          Serial.println("Single word: " + word);
-          this->setInputString(word);
-          this->setMode(0);
-      }
+  server.addHandler(new AsyncCallbackJsonWebHandler("/settings", [this](AsyncWebServerRequest *request, JsonVariant &json) {
+    if (request->method() != HTTP_POST) {
+      return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
     }
 
-    if (request->hasParam("mode", true)){ //mode selection page
-      String selectedMode = decodeURIComponent(request->getParam("mode", true)->value());
-      // Serial.println(selectedMode);
-      if (selectedMode == "Date"){
-        Serial.println("Date Mode");
-        this->setMode(2);
-      }
-      else if (selectedMode == "Time"){
-        Serial.println("Time Mode");
-        this->setMode(3);
-      }
-      else if (selectedMode == "Count"){
-        Serial.println("Count Mode");
-        this->setMode(4);
-      }
-      else if (selectedMode == "Random"){
-        Serial.println("Random Mode");
-        this->setMode(5);
-      }
+    Serial.println("Received settings update request");
+    Serial.println(json.as<String>());
+
+    bool reconnect = false;
+    JsonDocument response;
+    response["message"] = "Settings saved successfully!";
+
+    // TODO Refactor this it's gross
+    if (
+      (json["ssid"].is<String>() && json["ssid"].as<String>() != settings.getString("ssid"))
+      || (json["password"].is<String>() && json["password"].as<String>() != settings.getString("password"))
+    ) {
+      reconnect = true;
+      response["message"] = "Settings updated successfully, Network settings have changed, reconnect to the " + json["ssid"].as<String>() + " network";
     }
 
-    if (request->hasParam("ssid", true) && request->hasParam("password", true)) { //wifi settings page
-      String ssid = decodeURIComponent(request->getParam("ssid", true)->value());
-      String password = decodeURIComponent(request->getParam("password", true)->value());
-      preferences.begin("wifi", false);  // Open the preferences for Wi-Fi with write access
-      if (ssid!=""){ //dont save empty ssid
-        preferences.putString("ssid", ssid);      // Save SSID
-      }
-      preferences.putString("password", password); // Save Password
-      preferences.end();  // Close preferences
-      Serial.println("Received SSID: " + ssid);
-      Serial.println("Received Password: " + password);
-
-      this->attemptReconnect = true;
+    if (json["mdns"].is<String>() && json["mdns"].as<String>() != settings.getString("mdns")) {
+      reconnect = true;
+      response["message"] = "Settings updated successfully, mDNS name has changed, automatically redirecting to http://" + json["mdns"].as<String>() + ".local...";
+      response["redirect"] = "http://" + json["mdns"].as<String>() + ".local/settings.html";
     }
 
-    request->send(200, "application/json", "{\"message\":\"Text updated successfully\"}"); // Send JSON response
-  });
+    if (! settings.fromJson(json)) {
+      response["message"] = "Failed to save settings";
+      response["type"] = "error";
+      response["errors"]["key"] = settings.getLastValidationKey();
+      response["errors"]["message"] = settings.getLastValidationError();
+      return request->send(400, "application/json", response.as<String>());
+    }
+
+    response["type"] = "success";
+    response["persistent"] = reconnect;
+
+    request->send(200, "application/json", response.as<String>());
+
+    this->attemptReconnect = reconnect;
+  }));
+
+  server.addHandler(new AsyncCallbackJsonWebHandler("/text", [this](AsyncWebServerRequest *request, JsonVariant &json) {
+    if (request->method() != HTTP_POST) {
+      return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
+    }
+
+    Serial.println("Received text update request");
+    Serial.println(json.as<String>());
+
+    // {"mode":"single","words":["adfasdf"],"delay":1,"center":false}
+    // {"mode":"multiple","words":["asdf","asdfasdf","fffff"],"delay":"14","center":true}
+    JsonDocument response;
+
+    if (! json["mode"].is<String>()) {
+      response["message"] = "Invalid mode type";
+    }
+
+    if (! json["words"].is<JsonArray>()) {
+      response["message"] = "Invalid words array";
+    }
+
+    float delay = json["delay"].as<float>();
+    if (delay < 1) {
+      response["message"] = "Invalid delay type / value";
+    }
+
+    if (! json["center"].is<bool>()) {
+      response["message"] = "Invalid center type";
+    }
+
+    if (response["message"].is<String>()) {
+      response["type"] = "error";
+      return request->send(400, "application/json", response.as<String>());
+    }
+
+    this->setMultiDelay(delay * 1000);
+    Serial.println("Delay: " + String(this->getMultiWordDelay()));
+
+    centering = json["center"].as<bool>() ? 1 : 0;
+    Serial.println("centering: " + String(centering ? "true" : "false"));
+
+    if (json["mode"] == "single") {
+        String word = decodeURIComponent(json["words"][0].as<String>());
+        Serial.println("Single Word: " + word);
+        this->setInputString(word);
+        this->setMode(0); //change mode last once all variables updated
+    }
+
+    if (json["mode"] == "multiple") {
+      JsonArray wordsArray = json["words"].as<JsonArray>();
+      String words = "";
+      for (JsonVariant v : wordsArray) {
+        words += decodeURIComponent(v.as<String>()) + ",";
+      }
+      if (words.length() > 0) {
+        words.remove(words.length() - 1);
+      }
+
+      this->setMultiInputString(words);
+      this->numMultiWords = wordsArray.size();
+      Serial.println("Multiple Words: " + words);
+      Serial.println("Number of Words: " + String(this->numMultiWords));
+
+      this->setMode(1);
+    }
+
+    response["message"] = "Text updated successfully!";
+    response["type"] = "success";
+
+    request->send(200, "application/json", response.as<String>());
+  }));
+
+  server.onNotFound(fourOhFour);
 
   server.begin();
 }

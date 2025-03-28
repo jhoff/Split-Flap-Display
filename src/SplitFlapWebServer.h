@@ -7,13 +7,15 @@
 #include <ESPAsyncWebServer.h>  //by ESP32Async, Requires AsyncTCP by ESP32Async
 #include <ESPmDNS.h>
 #include "LittleFS.h" // use `pio run -t uploadfs` to upload file system
-#include <Preferences.h> //for ssid, pass, mode
 #include "time.h" //for network time protocol
+#include <ArduinoJson.h> //for settings json
+#include "JsonSettings.h"
 
 class SplitFlapWebServer {
   public:
-    SplitFlapWebServer();
+    SplitFlapWebServer(JsonSettings& settings);
     void init();
+    void setTimezone();
 
     //Wifi Connectivity
     bool loadWiFiCredentials();
@@ -21,6 +23,8 @@ class SplitFlapWebServer {
     bool getAttemptReconnect() const { return attemptReconnect; }
     void setAttemptReconnect(bool input){attemptReconnect = input;}
     void startWebServer();
+    void endMDNS();
+    void startMDNS();
     void startAccessPoint();
     void checkWiFi();
     unsigned long getLastCheckWifiTime() { return lastCheckWifiTime;}
@@ -57,13 +61,13 @@ class SplitFlapWebServer {
 
     int getCentering() { return centering; }
   private:
+    JsonSettings& settings;
 
     String decodeURIComponent(String encodedString);
     void setInputString(String input) {inputString=input; }
     void setMultiInputString(String input) {multiInputString=input; }
 
     void setMode(int targetMode);
-    int readMode();
     void setMultiDelay(int input) {multiWordDelay = input;}
 
     unsigned long lastCheckDateTime;
@@ -71,7 +75,6 @@ class SplitFlapWebServer {
 
     int connectionMode; //0 is AP mode, 1 is Internet Mode
     int centering; //whether to center text from custom imput
-    int mode; //current display mode
 
     int numMultiWords;
     unsigned long lastSwitchMultiTime;
@@ -86,9 +89,8 @@ class SplitFlapWebServer {
     unsigned long lastCheckWifiTime;
     int wifiCheckInterval;
     AsyncWebServer server; // Declare server as a class member
-    Preferences preferences; // For storing ssid, password, mode, written string
-
 };
+
 #endif
 //          __
 // (QUACK)>(o )___

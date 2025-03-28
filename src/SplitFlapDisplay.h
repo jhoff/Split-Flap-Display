@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include "SplitFlapModule.h"
+#include "JsonSettings.h"
 
 #define MAX_MODULES 8 //for memory allocation, update if more modules
 #define MAX_RPM 15.0f
@@ -11,7 +12,8 @@
 class SplitFlapDisplay {
   public:
 
-    SplitFlapDisplay(); //Constructor
+    SplitFlapDisplay(JsonSettings& settings);
+
     void init();
     void writeString(String inputString,float speed=MAX_RPM,bool centering=true); //Move all modules at once to show a specific string
     void writeChar(char inputChar,float speed = MAX_RPM); //sets all modules to a single char
@@ -25,23 +27,23 @@ class SplitFlapDisplay {
     int getNumModules() { return numModules; }
 
   private:
+    JsonSettings& settings;
+
     bool checkAllFalse(bool array[], int size);
     void stopMotors();
     void startMotors();
 
-    static const int numModules;             // Number of modules in the display
-    SplitFlapModule modules[MAX_MODULES];   // Array of SplitFlapModule objects, size of array is maximum number of modules allowed in class
-    static const int moduleOffsets[];
-    static const int displayOffset;
-    static const uint8_t moduleAddresses[];
+    int numModules;
+    uint8_t moduleAddresses[MAX_MODULES];
+    SplitFlapModule modules[MAX_MODULES];
+    int moduleOffsets[MAX_MODULES];
+    int displayOffset;
 
-    static const float maxVel; //Max Velocity In RPM
-    float maxStepsPerSecond; //calculated from maxVel
-    static const int stepsPerRotation; //number of motor steps per full rotation of character drum
-    static const int magnetPosition; //position of drum wheel when magnet is detected
-    static const int SDAPin;      // SDA pin
-    static const int SCLPin;      // SCL pin
-
+    float maxVel; //Max Velocity In RPM
+    int stepsPerRotation; //number of motor steps per full rotation of character drum
+    int magnetPosition; //position of drum wheel when magnet is detected
+    int SDAPin;      // SDA pin
+    int SCLPin;      // SCL pin
 };
 
 #endif

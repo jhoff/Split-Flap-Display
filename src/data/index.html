@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Split Flap Config</title>
-    <script src="settings-script.js"></script>
+    <script src="settings-script.js" defer></script>
+    <script src="mode-script.js" defer></script>
 </head>
 <body>
 <div class="container">
@@ -27,15 +28,15 @@
             <div class="switch-container">
                 <label>Centre Text</label>
                 <label class="switch">
-                    <input type="checkbox" id="centre-toggle">
+                    <input checked type="checkbox" id="centre-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
 
             <div class="switch-container">
-                <label id="toggle-label">Single Word</label>
+                <label id="toggle-label">Multiple Words</label>
                 <label class="switch">
-                    <input type="checkbox" id="word-toggle" onchange="toggleWordMode()">
+                    <input type="checkbox" id="word-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -47,11 +48,11 @@
 
             <div id="multi-word-container" class="full-container hidden">
                 <label for="tag-container">Word List:</label>
-                <div class="tag-container" id="tag-container">-word list empty-</div>
+                <div class="tag-container" id="tag-container">-empty-</div>
 
                 <div class="add-word-container">
                     <input type="text" id="word-input" placeholder="Type a word">
-                    <button class="small" onclick="addWord()">Add</button>
+                    <button id="add-word-btn" class="small">Add</button>
                 </div>
 
                 <label for="delay">Pause Between Words (seconds):</label>
@@ -61,15 +62,15 @@
     </div>
 
     <div class="actions">
-        <button id="sendBtn" onclick="sendData()">Update Display</button>
-        <span id="settingsBtn" class="iconBtn" onclick="toggleSettings()">⚙️ </span>
+        <button id="sendBtn">Update Display</button>
+        <span id="settingsBtn" class="iconBtn">⚙️</span>
     </div>
 </div>
 
 <!-- Modal for Settings -->
 <div id="settingsModal" class="modal hidden">
     <div class="modal-content">
-        <span class="close iconBtn" onclick="toggleSettings()">×</span>
+        <span id="settingsCloseBtn" class="close iconBtn">×</span>
 
         <div class="wifi">
             <label for="ssid">WiFi SSID:</label>
@@ -78,7 +79,7 @@
                 <label for="password">WiFi Password:</label>
                 <input type="password" id="password" placeholder="Enter WiFi Password">
             </div>
-            <a href="#" id="change-wifi-link" onclick="enableWifiEdit(event)">Change WiFi Settings</a>
+            <a href="#" id="change-wifi-link">Change WiFi Settings</a>
         </div>
 
         <div class="time">
@@ -123,180 +124,5 @@
         </div>
     </div>
 </div>
-
-
-<script>
-    const modeDropDown = document.getElementById("modeDropDown");
-    const sendButton = document.getElementById("sendBtn");
-    const ssidField = document.getElementById("ssid");
-    const passwordField = document.getElementById("password");
-    const inputField = document.getElementById("custom-text");
-    const modeToggle = document.getElementById("word-toggle");
-    const centreToggle = document.getElementById("centre-toggle");
-    const delayField = document.getElementById("delay");
-    let words = [];
-
-    function toggleSettings() {
-        document.getElementById('settingsModal').classList.toggle('hidden');
-    }
-
-    function sendData() {
-        const selectedMode = modeDropDown.value;
-        let body = new URLSearchParams();
-
-        sendButton.disabled = true;
-        sendButton.textContent = "Updating...";
-
-        if (selectedMode === "Custom") {
-            const centreChecked = centreToggle.checked ? 1 : 0;
-
-            if (modeToggle.checked) { // Multi-word
-                if (delayField.value.trim() === "") {
-                    alert("Delay cannot be empty!");
-                    resetButton();
-                    return;
-                }
-                body.append("inputType", "multiple");
-                body.append("words", encodeURIComponent(words.join(",")));
-                body.append("delay", encodeURIComponent(delayField.value));
-                body.append("centering", centreChecked);
-            } else { // Single-word
-                body.append("inputType", "single");
-                body.append("word", encodeURIComponent(inputField.value));
-                body.append("centering", centreChecked);
-            }
-        } else {
-        body.append("mode", encodeURIComponent(selectedMode));
-
-        if (selectedMode === "Time") {
-            const format24 = document.getElementById("format-24-toggle").checked ? 1 : 0;
-            body.append("format24", format24);
-        }
-    }
-
-        fetch("/submit", {
-            method: "POST",
-            headers: {"Content-Type": "application/x-www-form-urlencoded"},
-            body: body.toString(),
-        })
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to update");
-                return response.json();
-            })
-            .then(data => {
-                if (selectedMode === "Custom") inputField.value = "";
-            })
-            .catch(error => alert(error.message))
-            .finally(resetButton);
-    }
-
-    function resetButton() {
-        setTimeout(() => {
-            sendButton.disabled = false;
-            sendButton.textContent = 'Update Display';
-        }, 500);
-    }
-
-    function toggleWordMode() {
-        const toggle = document.getElementById("word-toggle");
-        const singleContainer = document.getElementById("single-word-container");
-        const multiContainer = document.getElementById("multi-word-container");
-        const label = document.getElementById("toggle-label");
-
-        if (toggle.checked) {
-            label.textContent = "Multiple Words";
-            singleContainer.classList.add("hidden");
-            multiContainer.classList.remove("hidden");
-        } else {
-            label.textContent = "Single Word";
-            singleContainer.classList.remove("hidden");
-            multiContainer.classList.add("hidden");
-        }
-    }
-
-    function addWord() {
-        const wordInput = document.getElementById("word-input");
-        if (wordInput.value.trim() !== "") {
-            words.push(wordInput.value.trim());
-            wordInput.value = "";
-            updateTags();
-        }
-    }
-
-    function removeWord(index) {
-        words.splice(index, 1);
-        updateTags();
-    }
-
-    function updateTags() {
-        const tagContainer = document.getElementById("tag-container");
-        tagContainer.innerHTML = "";
-
-        words.forEach((word, index) => {
-            let tag = document.createElement("span");
-            tag.classList.add("tag");
-            tag.innerHTML = `${word} <button onclick="removeWord(${index})">×</button>`;
-            tagContainer.appendChild(tag);
-        });
-    }
-
-    function handleModeChange() {
-        const customOptions = document.querySelector('.options-custom');
-        const selected = modeDropDown.value;
-
-        customOptions.style.display = selected === "Custom" ? 'flex' : 'none';
-    }
-
-    function loadConfig() {
-        fetch("/config")
-            .then(res => res.json())
-            .then(config => {
-                document.getElementById("format-24-toggle").checked = config.format24;
-                document.getElementById("timezone").value = config.timezone;
-                document.getElementById("ssid").value = config.ssid;
-
-                // Map backend numeric mode to dropdown value
-                const modeMap = {
-                    0: "Custom",
-                    1: "Custom",
-                    2: "Date",
-                    3: "Time",
-                    4: "Count",
-                    5: "Random"
-                };
-
-                const selectedMode = modeMap[config.mode] || "Date";
-                document.getElementById("modeDropDown").value = selectedMode;
-                handleModeChange();
-
-                if (config.ssid && config.ssid !== "") {
-                    document.getElementById("ssid").readOnly = true;
-                    document.getElementById("wifi-password-group").style.display = "none";
-                    document.getElementById("change-wifi-link").style.display = "flex";
-                } else {
-                    document.getElementById("ssid").readOnly = false;
-                    document.getElementById("wifi-password-group").style.display = "block";
-                    document.getElementById("change-wifi-link").style.display = "none";
-                }
-            })
-            .catch(err => console.error("Failed to load config:", err));
-    }
-
-    function enableWifiEdit(event) {
-        event.preventDefault();
-        document.getElementById("ssid").readOnly = false;
-        document.getElementById("wifi-password-group").style.display = "block";
-        document.getElementById("change-wifi-link").style.display = "none";
-    }
-
-    modeDropDown.addEventListener("change", handleModeChange);
-
-    window.addEventListener("DOMContentLoaded", () => {
-        handleModeChange();
-        loadConfig();
-    });
-
-
-</script>
 </body>
 </html>

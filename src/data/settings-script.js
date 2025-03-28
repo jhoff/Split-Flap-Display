@@ -1,80 +1,76 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const ssidField = document.getElementById("ssid");
-    const passwordField = document.getElementById("password");
-    const button = document.getElementById("saveBtn");
+  const ssidField = document.getElementById("ssid");
+  const passwordField = document.getElementById("password");
+  const timezoneField = document.getElementById("timezone");
+  const format24Toggle = document.getElementById("format-24-toggle");
+  const button = document.getElementById("settingsSaveBtn");
 
-    function sendData() {
-        var originalContent = button.textContent;
-        // Get values from input fields
-        const ssid = ssidField.value;
-        const password = passwordField.value;
-        
-        if (ssid.trim() === "") {
-            alert("SSID cannot be empty!");
-            button.textContent = originalContent;
-            ssidField.value = "";
-            passwordField.value = "";
-            button.disabled = false;
-            return; // Prevent further execution
-        }
-        
-        button.disabled = true;
-        button.textContent = "Connecting...";
+  function saveSettings() {
+    const ssid = ssidField.value.trim();
+    const password = passwordField.value.trim();
+    const timezone = timezoneField.value;
+    const format24 = format24Toggle.checked ? "1" : "0";
 
-        // Prepare the data to be sent
-        const data = new URLSearchParams();
-        data.append("ssid", encodeURIComponent(ssid));
-        data.append("password", encodeURIComponent(password));
+    const originalText = button.textContent;
 
-        // Send the data via POST request
-        fetch("/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: data.toString(),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to save settings");
-            }
-            return response.json();
-        })
-        .then(data => {
-            // ssidField.value = "";
-            passwordField.value = "";
-            // alert("Settings saved successfully!");
-
-        })
-        .catch(error => {
-            alert(error.message);
-        })
-        .finally(() => {
-            passwordField.value = "";
-            // Change button text to "Settings Saved"
-            button.textContent = "Saving..";
-            // After 2 seconds, change button text back to "Save"
-            setTimeout(() => {
-                button.disabled = false;
-                button.textContent = originalContent;
-            }, 500); //ms
-            // alert("Settings Saved, Connect Back To Your Network and Reload Site");
-        });
+    if (ssid === "") {
+      alert("SSID cannot be empty!");
+      ssidField.value = "";
+      passwordField.value = "";
+      return;
     }
 
-    // Submit when Enter key is pressed
-    ssidField.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); // Prevent form submission (if inside a form)
-            sendData();
-        }
-    });
+    button.disabled = true;
+    button.textContent = "Connecting...";
 
-    passwordField.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); // Prevent form submission (if inside a form)
-            sendData();
-        }
-    });
+    const data = new URLSearchParams();
 
-    // Attach click event to button
-    button.addEventListener("click", sendData);
+    // Only append password (and SSID) if password is provided
+    if (password !== "") {
+      data.append("ssid", encodeURIComponent(ssid));
+      data.append("password", encodeURIComponent(password));
+    }
+
+    // Always append timezone and format24
+    data.append("timezone", encodeURIComponent(timezone));
+    data.append("format24", format24);
+
+    fetch("/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: data.toString(),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to save settings");
+        }
+        return response.json();
+      })
+      .then(() => {
+        passwordField.value = "";
+      })
+      .catch(error => {
+        alert(error.message);
+      })
+      .finally(() => {
+        button.textContent = "Saving..";
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = originalText;
+        }, 500);
+      });
+  }
+
+  // Enter key triggers save
+  [ssidField, passwordField].forEach(field => {
+    field.addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveSettings();
+      }
+    });
+  });
+
+  // Save on button click
+  button.addEventListener("click", saveSettings);
 });

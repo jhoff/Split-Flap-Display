@@ -5,16 +5,298 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Split Flap Config</title>
+    <script src="settings-script.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Split Flap Config</h1>
-
-        <button class="button" onclick="location.href='/mode'">Mode</button>
-        <button class="button" onclick="location.href='/custom-text'">Custom Text</button>
-        <button class="button" onclick="location.href='/settings'">Settings</button>
-
-        <p class="footer">Morgan Manly 2025</p>
+<div class="container">
+    <div class="header">
+        <h1>Split Flap</h1>
     </div>
+
+    <label for="modeDropDown">Display Mode:</label>
+    <select id="modeDropDown">
+        <option value="Date">Date</option>
+        <option value="Time">Time</option>
+        <option value="Count">Count</option>
+        <option value="Random">Random</option>
+        <option value="Custom">Custom Text</option>
+    </select>
+
+    <div class="options-container">
+        <div class="options-custom" style="display: none;">
+            <div class="switch-container">
+                <label>Centre Text</label>
+                <label class="switch">
+                    <input type="checkbox" id="centre-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="switch-container">
+                <label id="toggle-label">Single Word</label>
+                <label class="switch">
+                    <input type="checkbox" id="word-toggle" onchange="toggleWordMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div id="single-word-container" class="full-container">
+                <label for="custom-text">Custom Text:</label>
+                <input type="text" id="custom-text" placeholder="Enter a single word">
+            </div>
+
+            <div id="multi-word-container" class="full-container hidden">
+                <label for="tag-container">Word List:</label>
+                <div class="tag-container" id="tag-container">-word list empty-</div>
+
+                <div class="add-word-container">
+                    <input type="text" id="word-input" placeholder="Type a word">
+                    <button class="small" onclick="addWord()">Add</button>
+                </div>
+
+                <label for="delay">Pause Between Words (seconds):</label>
+                <input type="number" id="delay" min="1" placeholder="Delay">
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button id="sendBtn" onclick="sendData()">Update Display</button>
+        <span id="settingsBtn" class="iconBtn" onclick="toggleSettings()">⚙️ </span>
+    </div>
+</div>
+
+<!-- Modal for Settings -->
+<div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close iconBtn" onclick="toggleSettings()">×</span>
+
+        <div class="wifi">
+            <label for="ssid">WiFi SSID:</label>
+            <input type="text" id="ssid" readonly>
+            <div id="wifi-password-group" style="display: none;">
+                <label for="password">WiFi Password:</label>
+                <input type="password" id="password" placeholder="Enter WiFi Password">
+            </div>
+            <a href="#" id="change-wifi-link" onclick="enableWifiEdit(event)">Change WiFi Settings</a>
+        </div>
+
+        <div class="time">
+            <label for="timezone">Timezone:</label>
+            <select id="timezone">
+                <!-- Europe -->
+                <option value="CET-1CEST,M3.5.0,M10.5.0/3">Central Europe (CET)</option>
+                <option value="GMT0BST,M3.5.0/1,M10.5.0">United Kingdom (GMT)</option>
+
+                <!-- Americas -->
+                <option value="EST5EDT,M3.2.0,M11.1.0">US Eastern (EST)</option>
+                <option value="CST6CDT,M3.2.0,M11.1.0">US Central (CST)</option>
+                <option value="PST8PDT,M3.2.0,M11.1.0">US Pacific (PST)</option>
+                <option value="AST4">South America (Argentina)</option>
+
+                <!-- Asia -->
+                <option value="IST-5:30">India Standard Time (IST)</option>
+                <option value="CST-8">China Standard Time (CST)</option>
+                <option value="JST-9">Japan Standard Time (JST)</option>
+
+                <!-- Oceania -->
+                <option value="AEST-10AEDT,M10.1.0,M4.1.0/3">Australia (AEST)</option>
+                <option value="NZST-12NZDT,M9.5.0,M4.1.0/3">New Zealand (NZST)</option>
+
+                <!-- Africa -->
+                <option value="EAT-3">East Africa (EAT)</option>
+                <option value="WAT-1">West Africa (WAT)</option>
+
+                <!-- Middle East -->
+                <option value="GST-4">Gulf Standard Time (UAE)</option>
+            </select>
+
+            <label>24-Hour Format</label>
+            <label class="switch">
+                <input type="checkbox" id="format-24-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="actions">
+            <button id="settingsSaveBtn">Save Settings</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const modeDropDown = document.getElementById("modeDropDown");
+    const sendButton = document.getElementById("sendBtn");
+    const ssidField = document.getElementById("ssid");
+    const passwordField = document.getElementById("password");
+    const inputField = document.getElementById("custom-text");
+    const modeToggle = document.getElementById("word-toggle");
+    const centreToggle = document.getElementById("centre-toggle");
+    const delayField = document.getElementById("delay");
+    let words = [];
+
+    function toggleSettings() {
+        document.getElementById('settingsModal').classList.toggle('hidden');
+    }
+
+    function sendData() {
+        const selectedMode = modeDropDown.value;
+        let body = new URLSearchParams();
+
+        sendButton.disabled = true;
+        sendButton.textContent = "Updating...";
+
+        if (selectedMode === "Custom") {
+            const centreChecked = centreToggle.checked ? 1 : 0;
+
+            if (modeToggle.checked) { // Multi-word
+                if (delayField.value.trim() === "") {
+                    alert("Delay cannot be empty!");
+                    resetButton();
+                    return;
+                }
+                body.append("inputType", "multiple");
+                body.append("words", encodeURIComponent(words.join(",")));
+                body.append("delay", encodeURIComponent(delayField.value));
+                body.append("centering", centreChecked);
+            } else { // Single-word
+                body.append("inputType", "single");
+                body.append("word", encodeURIComponent(inputField.value));
+                body.append("centering", centreChecked);
+            }
+        } else {
+        body.append("mode", encodeURIComponent(selectedMode));
+
+        if (selectedMode === "Time") {
+            const format24 = document.getElementById("format-24-toggle").checked ? 1 : 0;
+            body.append("format24", format24);
+        }
+    }
+
+        fetch("/submit", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: body.toString(),
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to update");
+                return response.json();
+            })
+            .then(data => {
+                if (selectedMode === "Custom") inputField.value = "";
+            })
+            .catch(error => alert(error.message))
+            .finally(resetButton);
+    }
+
+    function resetButton() {
+        setTimeout(() => {
+            sendButton.disabled = false;
+            sendButton.textContent = 'Update Display';
+        }, 500);
+    }
+
+    function toggleWordMode() {
+        const toggle = document.getElementById("word-toggle");
+        const singleContainer = document.getElementById("single-word-container");
+        const multiContainer = document.getElementById("multi-word-container");
+        const label = document.getElementById("toggle-label");
+
+        if (toggle.checked) {
+            label.textContent = "Multiple Words";
+            singleContainer.classList.add("hidden");
+            multiContainer.classList.remove("hidden");
+        } else {
+            label.textContent = "Single Word";
+            singleContainer.classList.remove("hidden");
+            multiContainer.classList.add("hidden");
+        }
+    }
+
+    function addWord() {
+        const wordInput = document.getElementById("word-input");
+        if (wordInput.value.trim() !== "") {
+            words.push(wordInput.value.trim());
+            wordInput.value = "";
+            updateTags();
+        }
+    }
+
+    function removeWord(index) {
+        words.splice(index, 1);
+        updateTags();
+    }
+
+    function updateTags() {
+        const tagContainer = document.getElementById("tag-container");
+        tagContainer.innerHTML = "";
+
+        words.forEach((word, index) => {
+            let tag = document.createElement("span");
+            tag.classList.add("tag");
+            tag.innerHTML = `${word} <button onclick="removeWord(${index})">×</button>`;
+            tagContainer.appendChild(tag);
+        });
+    }
+
+    function handleModeChange() {
+        const customOptions = document.querySelector('.options-custom');
+        const selected = modeDropDown.value;
+
+        customOptions.style.display = selected === "Custom" ? 'flex' : 'none';
+    }
+
+    function loadConfig() {
+        fetch("/config")
+            .then(res => res.json())
+            .then(config => {
+                document.getElementById("format-24-toggle").checked = config.format24;
+                document.getElementById("timezone").value = config.timezone;
+                document.getElementById("ssid").value = config.ssid;
+
+                // Map backend numeric mode to dropdown value
+                const modeMap = {
+                    0: "Custom",
+                    1: "Custom",
+                    2: "Date",
+                    3: "Time",
+                    4: "Count",
+                    5: "Random"
+                };
+
+                const selectedMode = modeMap[config.mode] || "Date";
+                document.getElementById("modeDropDown").value = selectedMode;
+                handleModeChange();
+
+                if (config.ssid && config.ssid !== "") {
+                    document.getElementById("ssid").readOnly = true;
+                    document.getElementById("wifi-password-group").style.display = "none";
+                    document.getElementById("change-wifi-link").style.display = "flex";
+                } else {
+                    document.getElementById("ssid").readOnly = false;
+                    document.getElementById("wifi-password-group").style.display = "block";
+                    document.getElementById("change-wifi-link").style.display = "none";
+                }
+            })
+            .catch(err => console.error("Failed to load config:", err));
+    }
+
+    function enableWifiEdit(event) {
+        event.preventDefault();
+        document.getElementById("ssid").readOnly = false;
+        document.getElementById("wifi-password-group").style.display = "block";
+        document.getElementById("change-wifi-link").style.display = "none";
+    }
+
+    modeDropDown.addEventListener("change", handleModeChange);
+
+    window.addEventListener("DOMContentLoaded", () => {
+        handleModeChange();
+        loadConfig();
+    });
+
+
+</script>
 </body>
 </html>

@@ -1,85 +1,306 @@
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #111;
+  color: white;
 }
 
 .container {
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
 }
 
 h1 {
-    font-size: 2em;
-    margin-bottom: 30px;
+  font-size: 4em;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+h1:before {
+  contenT: '';
+  position: absolute;
+  height: 6px;
+  background-color: #222;
+  width: 100%;
+  top: 50%;
 }
 
 button {
-    display: block;
-    width: 80%;
-    padding: 20px;
-    margin: 15px 0;
-    font-size: 1.5em;
-    text-align: center;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.submitButton {
-    margin-top: 15px;
-    width: 100%;
-    padding: 12px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-label {
-    display: block;
-    margin-top: 15px;
-    font-size: 1.1em;
-    text-align: left;
-}
-
-input,select{
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
+  display: block;
+  padding: 20px;
+  font-size: 1.2em;
+  text-align: center;
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-transform: uppercase;
 }
 
 button:hover {
-    background-color: #0056b3;
+  background-color: #4CAF50;
+}
+
+button.small {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+a {
+  color: #4CAF50;
+}
+
+.submitButton {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 1em;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+  background: #333;
+  color: #efefef;
+}
+
+input[readonly] {
+  border: 0;
+  background: transparent;
 }
 
 .footer {
-    font-size: 0.8em;
-    color: #777;
-    margin-top: 30px;
+  font-size: 0.8em;
+  color: #777;
+  margin-top: 30px;
+}
+
+.iconBtn {
+  cursor: pointer;
+  font-size: 2em;
+}
+
+#settingsBtn {
+  position: absolute;
+  right: 0;
+}
+
+#change-wifi-link {
+  margin: 10px 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: rgba(34, 34, 34, 0.75);
+  backdrop-filter: blur(5px);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content .close {
+    align-self: flex-end;
+}
+
+.options-container {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.options-container > div {
+    width: 100%;
+    display: none;
+    flex-wrap: wrap;
+}
+
+.switch-container {
+    width: 50%;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.actions {
+    display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-top: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    min-height: 50px;
+    align-items: center;
+}
+
+.tag {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 16px;
+    height: 50px;
+}
+
+.tag button {
+  background: none;
+  border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 3px;
+    align-self: center;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#delay-container {
+    margin-top: 10px;
+}
+
+.addButton {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+    width: 40%;
+    padding: 12px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.full-container {
+    width: 100%;
+}
+
+.add-word-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.add-word-container input {
+    flex-grow: 1;
+    width: 50%;
 }

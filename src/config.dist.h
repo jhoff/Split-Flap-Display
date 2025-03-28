@@ -8,7 +8,7 @@
 // Instead, copy this file to config.h in the same directory and make your changes there
 // This will prevent your settings from being committed to the repository
 
-#define NUM_MODULES 8;
+#define NUM_MODULES 6;
 #define MODULE_ADDRESSES {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27};  // Module I2C Addresses, In Order
 
 //Solder the contacts on PCF8575 for these addresses
@@ -24,7 +24,7 @@
 // 0x27  | H  | H  | H
 
 #define MAGNET_POSITION 730; //position of character drum when the magnet is detected, this sets position 0 to be the blank flap
-#define MODULE_OFFSETS {0, 0, 0, 0, 0, 0, 0, 0}; //Tuning offsets (55 steps per character) +ve values move backwards on the character drum, shift flaps upwards
+#define MODULE_OFFSETS {-15, -15, -15, -15, -15, -15, 0, 0}; //Tuning offsets (55 steps per character) +ve values move backwards on the character drum, shift flaps upwards
 #define DISPLAY_OFFSET 0; //Offset for all modules, for final adjustment
 
 #define SDA_PIN 8; // SDA pin
@@ -33,7 +33,7 @@
 #define STEPS_PER_ROTATION 2048; //Number of stepper steps per 1 revolution of the motor, gear ratio is 1:1 to char drum
 #define MAX_VEL 15.0f; //Max Rotations Per Minute
 
-#define NTP_SERVER "pool.ntp.org"; // NTP Server
-#define TZ_INFO "GMT0BST,M3.5.0/1,M10.5.0";  // UK: GMT in winter, BST (UTC+1) in summer
+#define NTP_SERVER "pool.ntp.org" // NTP Server
+#define TZ_INFO "GMT0BST,M3.5.0/1,M10.5.0"  // UK: GMT in winter
 
 #endif

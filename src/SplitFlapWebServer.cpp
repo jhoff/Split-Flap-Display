@@ -15,18 +15,31 @@
 #endif
 
 //Constructor
-SplitFlapWebServer::SplitFlapWebServer() : server(80), multiWordDelay(1000),attemptReconnect(false),multiWordCurrentIndex(0), numMultiWords(0)
-,wifiCheckInterval(1000),connectionMode(0),mode(0),checkDateInterval(250),centering(1) {
+SplitFlapWebServer::SplitFlapWebServer()
+  : server(80),
+    multiWordDelay(1000),
+    attemptReconnect(false),
+    multiWordCurrentIndex(0),
+    numMultiWords(0),
+    wifiCheckInterval(1000),
+    connectionMode(0),
+    mode(0),
+    checkDateInterval(250),
+    centering(1),
+    use24HourFormat(false)
+{
   lastSwitchMultiTime = millis();
 }
 
 void SplitFlapWebServer::init() {
-  const char* ntpServer = NTP_SERVER;
-  const char* tzInfo = TZ_INFO;
+    preferences.begin("display", true);
+    use24HourFormat = preferences.getBool("format24", false); // default = false
+    String tz = preferences.getString("tzinfo", String(TZ_INFO)); // fallback to TZ_INFO macro
+    preferences.end();
 
-  configTzTime(tzInfo, ntpServer);
+    configTzTime(tz.c_str(), NTP_SERVER);
 
-  mode = readMode(); //read last mode from memory
+    mode = readMode();
 }
 
 //Totally didn't use AI to make these functions
@@ -47,8 +60,17 @@ String SplitFlapWebServer::getCurrentHour() {
     if (!getLocalTime(&timeinfo)) {
         return "";
     }
-    char hourStr[3];  // Max "59" + null terminator
-    sprintf(hourStr, "%02d", timeinfo.tm_hour);  // Format as two-digit string
+
+    int currentHour = timeinfo.tm_hour;
+
+    if (!use24HourFormat) {
+        currentHour = currentHour % 12;
+        if (currentHour == 0) currentHour = 12;
+    }
+
+    char hourStr[3];
+    sprintf(hourStr, "%02d", currentHour);
+
     return String(hourStr);
 }
 
@@ -249,6 +271,27 @@ void SplitFlapWebServer::startWebServer(){
     request->send(LittleFS, "/settings.html");
   });
 
+server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request){
+    preferences.begin("display", true);
+    String tz = preferences.getString("tzinfo", String(TZ_INFO));
+    bool format24 = preferences.getBool("format24", false);
+    int savedMode = preferences.getInt("mode", 0);
+    preferences.end();
+
+    preferences.begin("wifi", true);
+    String ssid = preferences.getString("ssid", String(WIFI_SSID));
+    preferences.end();
+
+    String json = "{";
+    json += "\"format24\":" + String(format24 ? "true" : "false") + ",";
+    json += "\"timezone\":\"" + tz + "\",";
+    json += "\"ssid\":\"" + ssid + "\",";
+    json += "\"mode\":" + String(savedMode);
+    json += "}";
+
+    request->send(200, "application/json", json);
+});
+
   // Handle the form POST request
   server.on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request){
 
@@ -310,19 +353,47 @@ void SplitFlapWebServer::startWebServer(){
       }
     }
 
-    if (request->hasParam("ssid", true) && request->hasParam("password", true)) { //wifi settings page
-      String ssid = decodeURIComponent(request->getParam("ssid", true)->value());
-      String password = decodeURIComponent(request->getParam("password", true)->value());
-      preferences.begin("wifi", false);  // Open the preferences for Wi-Fi with write access
-      if (ssid!=""){ //dont save empty ssid
-        preferences.putString("ssid", ssid);      // Save SSID
-      }
-      preferences.putString("password", password); // Save Password
-      preferences.end();  // Close preferences
-      Serial.println("Received SSID: " + ssid);
-      Serial.println("Received Password: " + password);
+    if (request->hasParam("password", true)) {
+        String password = decodeURIComponent(request->getParam("password", true)->value());
 
-      this->attemptReconnect = true;
+        if (password != "") {
+            String ssid = decodeURIComponent(request->getParam("ssid", true)->value());
+
+            preferences.begin("wifi", false);
+            if (ssid != "") {
+                preferences.putString("ssid", ssid);
+                Serial.println("Saved SSID: " + ssid);
+            }
+            preferences.putString("password", password);
+            preferences.end();
+
+            Serial.println("Received Password: [hidden]");
+            this->attemptReconnect = true;
+        } else {
+            Serial.println("Password not filled — skipping WiFi update.");
+        }
+    }
+
+    if (request->hasParam("format24", true)) {
+        String format = request->getParam("format24", true)->value();
+        use24HourFormat = (format == "1");
+
+        preferences.begin("display", false);
+        preferences.putBool("format24", use24HourFormat);
+        preferences.end();
+
+        Serial.println("24-Hour Format: " + String(use24HourFormat ? "Enabled" : "Disabled"));
+    }
+
+    if (request->hasParam("timezone", true)) {
+        String tz = decodeURIComponent(request->getParam("timezone", true)->value());
+        Serial.println("Received Timezone: " + tz);
+
+        preferences.begin("display", false);
+        preferences.putString("tzinfo", tz);
+        preferences.end();
+
+        configTzTime(tz.c_str(), NTP_SERVER);
     }
 
     request->send(200, "application/json", "{\"message\":\"Text updated successfully\"}"); // Send JSON response

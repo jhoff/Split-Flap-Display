@@ -82,6 +82,8 @@ class SplitFlapWebServer {
     String inputString;   // latest single input from user
     String writtenString; //string for whatever is currently written to the display
 
+    bool use24HourFormat = false;
+
     bool attemptReconnect;
     unsigned long lastCheckWifiTime;
     int wifiCheckInterval;

@@ -8,11 +8,12 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 ## Features
 - Fully 3D Printed Modular Split Flap Display with 37 Characters Per Module
 - Small Size, 8 Modules are 320mm, 3 Modules are 130mm Wide. 80mm Tall
-- Web Interface To Switch Between Operation Modes, modes include custom input, date mode, time mode
+- Fully configurable and controllable via Web Interface
+    - Switch Between Operation Modes, modes include custom input, date mode, and time mode
+    - Configure WiFi, Timezone, and hardware settings
 
 ## Future features ( help wanted )
 - Additional board support
-- Full configuration via web interface
 - Pre-built firmware releases with web-based firmware update via [esptool-js](https://espressif.github.io/esptool-js/docs/index.html)
 - Optional basic json API endpoint to update display remotely
 - [ESPHome](https://esphome.io) support
@@ -31,24 +32,21 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 
 ## Setup Instructions
 
-### Using PlatformIO Core
-1. Install the [PlatformIO Core CLI](https://platformio.org/install/cli)
-1. [Download](https://github.com/jhoff/Split-Flap-Display/archive/refs/heads/main.zip) or clone the [git repository](https://github.com/jhoff/Split-Flap-Display).
+1. Install dependencies
+    * [PlatformIO Core CLI](https://platformio.org/install/cli)
+    * [Node Version Mananger](https://github.com/nvm-sh/nvm)
+    * [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (Only required if contributing code)
+1. [Download](https://github.com/jhoff/Split-Flap-Display/archive/refs/heads/main.zip) or clone this [git repository](https://github.com/jhoff/Split-Flap-Display).
 1. Open a terminal and `cd` to the project root
-1. Edit `src/config.dist.h` to define the number of modules and other hardware configurations for your build
+1. Install required version of npm for the project - `nvm install`
+1. Install build dependencies - `npm install`
 1. Connect the ESP32 to your computer using a USB cable.
-1. Run `platformio run -t upload -t uploadfs -e <environment>`.
-  * Replace `<environment>` with a value listed in [Supported boards](#supported-boards)
-  * This should install all required libraries, compile and upload the firmware, and then upload the filesystem
-1. Enjoy!
-
-### Using the PlatformIO IDE ( untested )
-1. Install the [PlatformIO IDE](https://platformio.org/install/ide).
-1. [Download](https://github.com/jhoss/Split-Flap-Display/archive/refs/heads/main.zip) or clone the [git repository](https://github.com/jhoss/Split-Flap-Display).
-1. Open the PlatformIO IDE and open the project by selecting the folder where the repository was downloaded or cloned.
-1. Edit `src/config.dist.h` to define the number of modules and other hardware configurations for your build.
-1. Connect the ESP32 to your computer using a USB cable.
-1. Click the "PlatformIO: Upload" button in the IDE or use the command palette to run the "PlatformIO: Upload" task.
+1. Build everything and upload to the board - `npm run build`
+  * Automatically formats all source code ( `npm run format` - if needed )
+  * Compiles and minifies all frontend assets ( `npm run assets` )
+  * Downloads all required arduino / esp32 libraries
+  * Compiles and uploads the esp32 firmware ( `npm run pio:firmware` or `pio run -t upload` )
+  * Compiles and uploads the littlefs filesystem ( `npm run pio:filesystem` or `pio run -t uploadfs` )
 1. Enjoy!
 
 ## Contributing

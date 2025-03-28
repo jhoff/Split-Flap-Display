@@ -3,3 +3,4 @@ src/config.h
 .pio/build
 .pio/libdeps
 .vscode
+.idea

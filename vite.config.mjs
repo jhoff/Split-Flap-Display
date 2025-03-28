@@ -46,7 +46,7 @@ export default defineConfig({
             transform(file, async content => await minify(content, {
               collapseWhitespace: true,
               removeComments: true,
-              minifyCSS: false,
+              minifyCSS: true,
               minifyJS: true,
             }));
           }

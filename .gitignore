@@ -3,3 +3,4 @@
 .pio/libdeps
 .vscode
 node_modules/
+build/web/*

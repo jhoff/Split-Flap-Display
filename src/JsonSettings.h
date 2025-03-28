@@ -2,41 +2,43 @@
 #define JsonSettings_h
 
 #include "Arduino.h"
-#include <Preferences.h>
-#include <ArduinoJson.h>
-#include <map>
 #include "JsonSetting.h"
+#include <ArduinoJson.h>
+#include <Preferences.h>
+#include <map>
 
 class JsonSettings {
-  public:
-    JsonSettings(const char* name, std::map<String, JsonSetting> map) : name(name), map(map) {}
+public:
+  JsonSettings(const char *name, std::map<String, JsonSetting> map)
+      : name(name), map(map) {}
 
-    String getString(const char* key);
-    int getInt(const char* key);
-    float getFloat(const char* key);
-    std::vector<int> getIntVector(const char* key);
+  String getString(const char *key);
+  int getInt(const char *key);
+  float getFloat(const char *key);
+  std::vector<int> getIntVector(const char *key);
 
-    void putString(const char* key, String value);
-    void putInt(const char* key, int value);
-    void putFloat(const char* key, float value);
-    void putIntVector(const char* key, std::vector<int> value);
+  void putString(const char *key, String value);
+  void putInt(const char *key, int value);
+  void putFloat(const char *key, float value);
+  void putIntVector(const char *key, std::vector<int> value);
 
-    JsonDocument toJson();
-    bool fromJson(JsonDocument settings);
-    bool reset();
+  JsonDocument toJson();
+  bool fromJson(JsonDocument settings);
+  bool reset();
 
-    String getLastValidationError() { return lastValidationError; }
-    String getLastValidationKey() { return lastValidationKey; }
-  private:
-    const char* name;
-    std::map<String, JsonSetting> map;
+  String getLastValidationError() { return lastValidationError; }
+  String getLastValidationKey() { return lastValidationKey; }
 
-    String lastValidationError;
-    String lastValidationKey;
+private:
+  const char *name;
+  std::map<String, JsonSetting> map;
 
-    JsonSetting find(const char* key);
+  String lastValidationError;
+  String lastValidationKey;
 
-    Preferences preferences;
+  JsonSetting find(const char *key);
+
+  Preferences preferences;
 };
 
 #endif

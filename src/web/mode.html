@@ -1,51 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:," />
-    <title x-text="header"></title>
-    <style>[x-cloak] { display: none !important; }</style>
-    <link rel="stylesheet" href="index.css">
-    <script defer src="index.js" type="module"></script>
-</head>
-<body x-data="page('Mode')" class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-gray-100">
-    <div x-data="mode" class="flex flex-col items-center justify-center bg-gray-800 p-6 m-6 rounded-lg shadow-lg max-w-md w-11/12 text-center">
-        <div class="flex items-center w-full mb-6">
-            <a href="index.html" class="text-blue-400 hover:no-underline flex items-center">&lt;</a>
-            <h1 class="text-2xl font-bold mx-auto" x-text="header"></h1>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="data:," />
+        <title x-text="header"></title>
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
+        <link rel="stylesheet" href="index.css" />
+        <script defer src="index.js" type="module"></script>
+    </head>
+    <body
+        x-data="page('Mode')"
+        class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-gray-100"
+    >
+        <div
+            x-data="mode"
+            class="flex flex-col items-center justify-center bg-gray-800 p-6 m-6 rounded-lg shadow-lg max-w-md w-11/12 text-center"
+        >
+            <div class="flex items-center w-full mb-6">
+                <a
+                    href="index.html"
+                    class="text-blue-400 hover:no-underline flex items-center"
+                    >&lt;</a
+                >
+                <h1 class="text-2xl font-bold mx-auto" x-text="header"></h1>
+            </div>
+
+            <label class="block text-left text-lg mb-4">Select Mode:</label>
+            <select
+                class="w-full p-3 mb-6 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-white"
+                x-model="settings.mode"
+            >
+                <option value="2">Date</option>
+                <option value="3">Time</option>
+                <option value="4">Count</option>
+                <option value="5">Random</option>
+            </select>
+
+            <button
+                class="w-full p-3 mt-6 text-lg font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-700 transition-colors"
+                x-on:click="save"
+            >
+                Update Display
+            </button>
         </div>
-
-        <label class="block text-left text-lg mb-4">Select Mode:</label>
-        <select class="w-full p-3 mb-6 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-white"
-            x-model="settings.mode">
-            <option value="2">Date</option>
-            <option value="3">Time</option>
-            <option value="4">Count</option>
-            <option value="5">Random</option>
-        </select>
-
-        <button class="w-full p-3 mt-6 text-lg font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-700 transition-colors"
-            x-on:click="save">Update Display</button>
-    </div>
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('mode', () => ({
-                save() {
-                    fetch('/settings', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({mode: this.settings.mode})
-                    })
-                    .then(response => response.json())
-                    .catch(() => this.showDialog('Failed to save settings.', 'error'))
-                    .then(() => this.showDialog('Settings saved successfully.', 'success'));
-                },
-            }));
-        });
-    </script>
-    <div class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 text-white rounded-md transition duration-300"
-        :class="{'bg-green-500': dialog.type === 'success', 'bg-red-500': dialog.type === 'error'}"
-        x-show="dialog.show" x-text="dialog.message" x-cloak></div>
-</body>
+        <script>
+            document.addEventListener("alpine:init", () => {
+                Alpine.data("mode", () => ({
+                    save() {
+                        fetch("/settings", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ mode: this.settings.mode }),
+                        })
+                            .then((response) => response.json())
+                            .catch(() =>
+                                this.showDialog(
+                                    "Failed to save settings.",
+                                    "error",
+                                ),
+                            )
+                            .then(() =>
+                                this.showDialog(
+                                    "Settings saved successfully.",
+                                    "success",
+                                ),
+                            );
+                    },
+                }));
+            });
+        </script>
+        <div
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 text-white rounded-md transition duration-300"
+            :class="{'bg-green-500': dialog.type === 'success', 'bg-red-500': dialog.type === 'error'}"
+            x-show="dialog.show"
+            x-text="dialog.message"
+            x-cloak
+        ></div>
+    </body>
 </html>

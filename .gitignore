@@ -1,5 +1,6 @@
 .DS_Store
-src/config.h
 .pio/build
 .pio/libdeps
 .vscode
+node_modules/
+build/web/*

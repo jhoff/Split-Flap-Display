@@ -1,36 +1,56 @@
 // Split Flap Display
-// Morgan Manly
-// 16/02/2025
+// Morgan Manly 02/16/2025
+// Jordan Hoff 03/25/2025
 
-// Edit config.dist.h to alter number of modules, and set addresses
 // Enjoy :)
-
 #include "Arduino.h"
 #include "SplitFlapDisplay.h"
 #include "SplitFlapWebServer.h"
+#include "JsonSettings.h"
 
-SplitFlapDisplay display; //Create Display Object
-SplitFlapWebServer webServer; //Create Webserver Object
+JsonSettings settings = JsonSettings("config", {
+    // General Settings
+    {"name", JsonSetting("My Display")},
+    {"mdns", JsonSetting("splitflap")},
+    {"timezone", JsonSetting("Etc/UTC")},
+    // Wifi Settings
+    {"ssid", JsonSetting("")},
+    {"password", JsonSetting("")},
+    // Hardware Settings
+    {"moduleCount", JsonSetting(8)},
+    {"moduleAddresses", JsonSetting({0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27})},
+    {"magnetPosition", JsonSetting(730)},
+    {"moduleOffsets", JsonSetting({0,0,0,0,0,0,0,0})},
+    {"displayOffset", JsonSetting(0)},
+    {"sdaPin", JsonSetting(8)},
+    {"sclPin", JsonSetting(9)},
+    {"stepsPerRot", JsonSetting(2048)},
+    {"maxVel", JsonSetting(15.0f)},
+    // Operational States
+    {"mode", JsonSetting(0)}
+});
+
+SplitFlapDisplay display(settings);
+SplitFlapWebServer webServer(settings);
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(SERIAL_SPEED);
 
-  Serial.println("Init Display");
-  display.init(); //Initialise Display, and All Modules Within
-
-  display.homeToString("");
-
-  Serial.println("Init Web Server");
-  webServer.init();
-
   #ifdef STARTUP_DELAY
     delay(STARTUP_DELAY);
   #endif
 
-  if (!webServer.connectToWifi()) {
+  Serial.println("Init Web Server");
+  webServer.init();
+
+  if (! webServer.connectToWifi()) {
     webServer.startAccessPoint();
-    webServer.startWebServer(); //Start Webserver
+    webServer.startMDNS();
+    webServer.startWebServer();
+
+    display.init();
+    display.homeToString("");
 
     if (display.getNumModules() == 8){
       display.writeString("Wifi Err");
@@ -40,7 +60,12 @@ void setup() {
     }
   }
   else{
-    webServer.startWebServer(); //Start Webserver
+    webServer.startMDNS();
+    webServer.startWebServer();
+
+    display.init();
+    display.homeToString("");
+
     display.writeString("OK");
     delay(250);
     display.writeString("");
@@ -218,11 +243,14 @@ void reconnectIfNeeded(){
   if (webServer.getAttemptReconnect()) { //check if the device should attempt reconnection to wifi
     webServer.setAttemptReconnect(false);
     display.writeString("");
-    if (!webServer.connectToWifi()) {
+    if (! webServer.connectToWifi()) {
       webServer.startAccessPoint();
+      webServer.endMDNS();
+      webServer.startMDNS();
       display.writeChar('X');
-    }
-    else{
+    } else {
+      webServer.endMDNS();
+      webServer.startMDNS();
       display.writeString("OK");
       webServer.setWrittenString("OK");
       delay(500);

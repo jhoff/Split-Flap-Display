@@ -1,5 +1,10 @@
 #include "SplitFlapDisplay.h"
 #include "SplitFlapModule.h"
+#include <PubSubClient.h>
+
+extern PubSubClient mqttClient;
+extern const char* mqtt_topic_state;
+extern String mqtt_server;
 
 #if __has_include("config.h")
   #include "config.h"
@@ -194,6 +199,10 @@ void SplitFlapDisplay::writeString(String inputString,float speed,bool centering
     targetPositions[i] = modules[i].getCharPosition(currentChar);
   }
   moveTo(targetPositions,speed);
+
+  if (mqtt_server != "" && mqttClient.connected()) {
+    mqttClient.publish(mqtt_topic_state, displayString.c_str(), true);
+  }
 
 }
 

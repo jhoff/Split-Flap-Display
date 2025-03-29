@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const format24Toggle = document.getElementById("format-24-toggle");
     const button = document.getElementById("settingsSaveBtn");
     const changeWifiLink = document.getElementById("change-wifi-link");
+    const mqttServerField = document.getElementById("mqtt-server");
+    const mqttPortField = document.getElementById("mqtt-port");
+    const mqttUserField = document.getElementById("mqtt-user");
+    const mqttPasswordField = document.getElementById("mqtt-password");
 
     function toggleSettings() {
         document.getElementById("settingsModal").classList.toggle("hidden");
@@ -23,6 +27,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 format24Toggle.checked = config.format24;
                 timezoneField.value = config.timezone;
                 ssidField.value = config.ssid;
+                mqttServerField.value = config.mqtt_server;
+                mqttPortField.value = config.mqtt_port;
+                mqttUserField.value = config.mqtt_user;
+                mqttPasswordField.value = "";
 
                 if (config.ssid && config.ssid !== "") {
                     ssidField.readOnly = true;
@@ -50,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const event = new Event("change");
                     dropdown.dispatchEvent(event);
                 }
+
             })
             .catch(err => console.error("Failed to load config:", err));
     }
@@ -59,6 +68,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const password = passwordField.value.trim();
         const timezone = timezoneField.value;
         const format24 = format24Toggle.checked ? "1" : "0";
+        const mqttServer = mqttServerField.value.trim();
+        const mqttPort = mqttPortField.value.trim();
+        const mqttUser = mqttUserField.value.trim();
+        const mqttPassword = mqttPasswordField.value.trim();
 
         const originalText = button.textContent;
 
@@ -82,6 +95,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         data.append("timezone", encodeURIComponent(timezone));
         data.append("format24", format24);
+
+        if (mqttServer !== "") {
+            data.append("mqtt_server", encodeURIComponent(mqttServer));
+        }
+        if (mqttPort !== "") {
+            data.append("mqtt_port", mqttPort);  // no need to encode a number
+        }
+
+        if (mqttUser !== "") {
+            data.append("mqtt_user", encodeURIComponent(mqttUser));
+        }
+        if (mqttPassword !== "") {
+            data.append("mqtt_pass", encodeURIComponent(mqttPassword));
+        }
 
         fetch("/submit", {
             method: "POST",

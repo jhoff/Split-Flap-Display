@@ -56,6 +56,11 @@ class SplitFlapWebServer {
     int getDateCheckInterval() { return checkDateInterval; }
 
     int getCentering() { return centering; }
+
+    void requestMqttReconnect() { mqttReconnectRequired = true; }
+    bool isMqttReconnectRequired() { return mqttReconnectRequired; }
+    void clearMqttReconnectFlag() { mqttReconnectRequired = false; }
+
   private:
 
     String decodeURIComponent(String encodedString);
@@ -83,6 +88,7 @@ class SplitFlapWebServer {
     String writtenString; //string for whatever is currently written to the display
 
     bool use24HourFormat = false;
+    bool mqttReconnectRequired = false;
 
     bool attemptReconnect;
     unsigned long lastCheckWifiTime;

@@ -246,8 +246,8 @@ void SplitFlapWebServer::startWebServer(){
       request->send(LittleFS, "/settings-script.js", "application/javascript");
   });
 
-  server.on("/custom-text-script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(LittleFS, "/custom-text-script.js", "application/javascript");
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(LittleFS, "/favicon.ico", "image/x-icon");
   });
 
   server.on("/mode-script.js", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -257,18 +257,6 @@ void SplitFlapWebServer::startWebServer(){
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(LittleFS, "/index.html");
-  });
-
-  server.on("/custom-text", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/custom-text.html");
-  });
-
-  server.on("/mode", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/mode.html");
-  });
-
-  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(LittleFS, "/settings.html");
   });
 
 server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -282,11 +270,21 @@ server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request){
     String ssid = preferences.getString("ssid", String(WIFI_SSID));
     preferences.end();
 
+    preferences.begin("mqtt", true);
+    String mqttServer = preferences.getString("mqtt_server", "192.168.1.100");
+    int mqttPort = preferences.getInt("mqtt_port", 1883);
+    String mqttUser = preferences.getString("mqtt_user", "");
+    // Do NOT return mqtt_pass for security
+    preferences.end();
+
     String json = "{";
     json += "\"format24\":" + String(format24 ? "true" : "false") + ",";
     json += "\"timezone\":\"" + tz + "\",";
     json += "\"ssid\":\"" + ssid + "\",";
-    json += "\"mode\":" + String(savedMode);
+    json += "\"mode\":" + String(savedMode) + ",";
+    json += "\"mqtt_server\":\"" + mqttServer + "\",";
+    json += "\"mqtt_port\":" + String(mqttPort) + ",";
+    json += "\"mqtt_user\":\"" + mqttUser + "\"";
     json += "}";
 
     request->send(200, "application/json", json);
@@ -294,6 +292,7 @@ server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request){
 
   // Handle the form POST request
   server.on("/submit", HTTP_POST, [this](AsyncWebServerRequest *request){
+    bool mqttSettingsChanged = false;
 
     if (request->hasParam("inputType", true)) {
       String inputType = decodeURIComponent(request->getParam("inputType", true)->value());
@@ -394,6 +393,46 @@ server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request){
         preferences.end();
 
         configTzTime(tz.c_str(), NTP_SERVER);
+    }
+
+    if (request->hasParam("mqtt_server", true)) {
+        String mqttServer = decodeURIComponent(request->getParam("mqtt_server", true)->value());
+        preferences.begin("mqtt", false);
+        preferences.putString("mqtt_server", mqttServer);
+        preferences.end();
+        mqttSettingsChanged = true;
+        Serial.println("Saved MQTT Server: " + mqttServer);
+    }
+
+    if (request->hasParam("mqtt_port", true)) {
+        int mqttPort = request->getParam("mqtt_port", true)->value().toInt();
+        preferences.begin("mqtt", false);
+        preferences.putInt("mqtt_port", mqttPort);
+        preferences.end();
+        mqttSettingsChanged = true;
+        Serial.println("Saved MQTT Port: " + String(mqttPort));
+    }
+
+    if (request->hasParam("mqtt_user", true)) {
+        String mqttUser = decodeURIComponent(request->getParam("mqtt_user", true)->value());
+        preferences.begin("mqtt", false);
+        preferences.putString("mqtt_user", mqttUser);
+        preferences.end();
+        mqttSettingsChanged = true;
+        Serial.println("Saved MQTT User: " + mqttUser);
+    }
+
+    if (request->hasParam("mqtt_pass", true)) {
+        String mqttPass = decodeURIComponent(request->getParam("mqtt_pass", true)->value());
+        preferences.begin("mqtt", false);
+        preferences.putString("mqtt_pass", mqttPass);
+        preferences.end();
+        mqttSettingsChanged = true;
+        Serial.println("Saved MQTT Password: [hidden]");
+    }
+
+    if (mqttSettingsChanged) {
+      this->requestMqttReconnect();
     }
 
     request->send(200, "application/json", "{\"message\":\"Text updated successfully\"}"); // Send JSON response

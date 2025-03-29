@@ -45,24 +45,25 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
   * Automatically formats all source code ( `npm run format` - if needed )
   * Compiles and minifies all frontend assets ( `npm run assets` )
   * Downloads all required arduino / esp32 libraries
-  * Compiles and uploads the esp32 firmware ( `npm run pio:firmware` or `pio run -t upload` )
-  * Compiles and uploads the littlefs filesystem ( `npm run pio:filesystem` or `pio run -t uploadfs` )
+  * Compiles and uploads the esp32 firmware ( `npm run pio:firmware` or `pio run -t upload -e <environment>` )
+  * Compiles and uploads the littlefs filesystem ( `npm run pio:filesystem` or `pio run -t uploadfs -e <environment>` )
 1. Enjoy!
 
 ## Contributing
 
 ### Setup
-1. [Fork](https://github.com/jhoff/Split-Flap-Display/fork) this repository on GitHub.
+1. Create a GitHub account if necessary and login.
+1. [Fork](https://github.com/jhoff/Split-Flap-Display/fork) this repository.
 1. Clone your forked repository to your local machine.
   * `git clone https://github.com/your-username/Split-Flap-Display.git`
-1. Copy `src/config.dist.h` to `src/config.h` and customize with your own configuration
-  * This prevents your config from being committed, as it will be used during compilation but ignored by git.
+1. Install the dependencies listed in [Setup Instructions](#setup-instructions)
+1. Skip step 2, complete the setup and use `npm run build` to test and upload your changes.
 
 ### Create your feature
 1. Start a new branch with a descriptive name.
 1. Compile and upload your changes
-  * `platformio run -t upload -e <environment>` to compile core changes and upload
-  * `platformio run -t uploadfs -e <environment>` to upload files in `src/data`
-  * You can build and upload everything at once using `platformio run -t upload -t uploadfs -e <environment>`, but it takes longer.
+  * `npm run pio:firmware` or `pio run -t upload -e <environment>` to compile firmware and upload
+  * `npm run pio:filesystem` or `pio run -t uploadfs -e <environment>` to compile the filesystem from `src/web` and upload
+  * You can do both together using `npm run pio` or `pio run -t upload -t uploadfs -e <environment>`
 1. When ready, commit and push your changes to your forked repository.
 1. Open a pull request to this repository.

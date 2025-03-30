@@ -7,10 +7,10 @@
 #include "LittleFS.h"    // use `pio run -t uploadfs` to upload file system
 #include "time.h"        //for network time protocol
 #include <ArduinoJson.h> //for settings json
+#include <ArduinoOTA.h>
 #include <ESPAsyncWebServer.h> //by ESP32Async, Requires AsyncTCP by ESP32Async
 #include <ESPmDNS.h>
 #include <WiFi.h>
-#include <ArduinoOTA.h>
 
 class SplitFlapWebServer {
 public:
@@ -20,20 +20,20 @@ public:
   void checkRebootRequired();
 
   // Wifi Connectivity
-    bool loadWiFiCredentials();
-    bool connectToWifi();
-    bool getAttemptReconnect() const { return attemptReconnect; }
-    void setAttemptReconnect(bool input) { attemptReconnect = input; }
-    void startWebServer();
-    void endMDNS();
-    void startMDNS();
-    void enableOta();
-    void handleOta();
-    void startAccessPoint();
-    void checkWiFi();
-    unsigned long getLastCheckWifiTime() { return lastCheckWifiTime; }
-    void setLastCheckWifiTime(unsigned long input) { lastCheckWifiTime = input; }
-    int getWifiCheckInterval() { return wifiCheckInterval; }
+  bool loadWiFiCredentials();
+  bool connectToWifi();
+  bool getAttemptReconnect() const { return attemptReconnect; }
+  void setAttemptReconnect(bool input) { attemptReconnect = input; }
+  void startWebServer();
+  void endMDNS();
+  void startMDNS();
+  void enableOta();
+  void handleOta();
+  void startAccessPoint();
+  void checkWiFi();
+  unsigned long getLastCheckWifiTime() { return lastCheckWifiTime; }
+  void setLastCheckWifiTime(unsigned long input) { lastCheckWifiTime = input; }
+  int getWifiCheckInterval() { return wifiCheckInterval; }
 
   // Mode
   int getMode();

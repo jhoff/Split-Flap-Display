@@ -14,10 +14,10 @@
 
 // Constructor
 SplitFlapWebServer::SplitFlapWebServer(JsonSettings &settings)
-    : settings(settings), server(80), multiWordDelay(1000), rebootRequired(false),
-      attemptReconnect(false), multiWordCurrentIndex(0), numMultiWords(0),
-      wifiCheckInterval(1000), connectionMode(0), checkDateInterval(250),
-      centering(1) {
+    : settings(settings), server(80), multiWordDelay(1000),
+      rebootRequired(false), attemptReconnect(false), multiWordCurrentIndex(0),
+      numMultiWords(0), wifiCheckInterval(1000), connectionMode(0),
+      checkDateInterval(250), centering(1) {
   lastSwitchMultiTime = millis();
 }
 
@@ -155,19 +155,19 @@ bool SplitFlapWebServer::loadWiFiCredentials() {
   String password = String(WIFI_PASS).isEmpty() ? settings.getString("password")
                                                 : String(WIFI_PASS);
 
-    if (ssid != "" && password != "") {
-        Serial.println("Wi-Fi credentials loaded successfully.");
-        Serial.print("Connecting to Network: ");
-        Serial.println(ssid);
-        WiFi.mode(WIFI_STA);
-        #ifdef WIFI_TX_POWER
-          delay(100);
-          WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
-        #endif
-        WiFi.begin(ssid.c_str(), password.c_str());
-        return true; // Return true if credentials exist
-    }
-    return false; // Return false if no credentials were found
+  if (ssid != "" && password != "") {
+    Serial.println("Wi-Fi credentials loaded successfully.");
+    Serial.print("Connecting to Network: ");
+    Serial.println(ssid);
+    WiFi.mode(WIFI_STA);
+#ifdef WIFI_TX_POWER
+    delay(100);
+    WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
+#endif
+    WiFi.begin(ssid.c_str(), password.c_str());
+    return true; // Return true if credentials exist
+  }
+  return false; // Return false if no credentials were found
 }
 
 void SplitFlapWebServer::checkRebootRequired() {
@@ -178,48 +178,48 @@ void SplitFlapWebServer::checkRebootRequired() {
   }
 }
 
-void SplitFlapWebServer::handleOta() {
-  ArduinoOTA.handle();
-}
+void SplitFlapWebServer::handleOta() { ArduinoOTA.handle(); }
 void SplitFlapWebServer::enableOta() {
   ArduinoOTA.end(); // End any previous OTA sessions
 
-  ArduinoOTA.setHostname(settings.getString("mdns").c_str()); // otherwise mdns name gets overwritten with default
+  ArduinoOTA.setHostname(
+      settings.getString("mdns")
+          .c_str()); // otherwise mdns name gets overwritten with default
   ArduinoOTA.setPassword(settings.getString("otaPass").c_str());
 
   ArduinoOTA
-    .onStart([]() {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH) {
-        type = "sketch";
-      } else {  // U_LITTLEFS
-        type = "filesystem";
-        LittleFS.end();  // Unmount the filesystem before update
-      }
-      Serial.println("Start updating " + type);
-    })
-    .onEnd([]() {
-      Serial.println("\nEnd");
-      LittleFS.begin(); // Remount filesystem
-    })
-    .onProgress([](unsigned int progress, unsigned int total) {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    })
-    .onError([](ota_error_t error) {
-      Serial.printf("Error[%u]: ", error);
-      LittleFS.begin(); // Remount filesystem
-      if (error == OTA_AUTH_ERROR) {
-        Serial.println("Auth Failed");
-      } else if (error == OTA_BEGIN_ERROR) {
-        Serial.println("Begin Failed");
-      } else if (error == OTA_CONNECT_ERROR) {
-        Serial.println("Connect Failed");
-      } else if (error == OTA_RECEIVE_ERROR) {
-        Serial.println("Receive Failed");
-      } else if (error == OTA_END_ERROR) {
-        Serial.println("End Failed");
-      }
-    });
+      .onStart([]() {
+        String type;
+        if (ArduinoOTA.getCommand() == U_FLASH) {
+          type = "sketch";
+        } else { // U_LITTLEFS
+          type = "filesystem";
+          LittleFS.end(); // Unmount the filesystem before update
+        }
+        Serial.println("Start updating " + type);
+      })
+      .onEnd([]() {
+        Serial.println("\nEnd");
+        LittleFS.begin(); // Remount filesystem
+      })
+      .onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+      })
+      .onError([](ota_error_t error) {
+        Serial.printf("Error[%u]: ", error);
+        LittleFS.begin(); // Remount filesystem
+        if (error == OTA_AUTH_ERROR) {
+          Serial.println("Auth Failed");
+        } else if (error == OTA_BEGIN_ERROR) {
+          Serial.println("Begin Failed");
+        } else if (error == OTA_CONNECT_ERROR) {
+          Serial.println("Connect Failed");
+        } else if (error == OTA_RECEIVE_ERROR) {
+          Serial.println("Receive Failed");
+        } else if (error == OTA_END_ERROR) {
+          Serial.println("End Failed");
+        }
+      });
 
   ArduinoOTA.begin();
   Serial.println("OTA Initialized");
@@ -364,8 +364,10 @@ void SplitFlapWebServer::startWebServer() {
 
         if (json["otaPass"].is<String>() &&
             json["otaPass"].as<String>() != settings.getString("otaPass")) {
-          rebootRequired = true; // OTA password change can only be applied by rebooting
-          response["message"] = "Settings updated successfully, OTA Password has changed. Rebooting...";
+          rebootRequired =
+              true; // OTA password change can only be applied by rebooting
+          response["message"] = "Settings updated successfully, OTA Password "
+                                "has changed. Rebooting...";
         }
 
         if (json["mdns"].is<String>() &&

@@ -9,7 +9,7 @@
     <script src="mode-script.js" defer></script>
 </head>
 <body>
-<div class="container">
+<main class="container">
     <div class="header">
         <h1>Split Flap</h1>
     </div>
@@ -18,7 +18,6 @@
     <select id="modeDropDown">
         <option value="Date">Date</option>
         <option value="Time">Time</option>
-        <option value="Count">Count</option>
         <option value="Random">Random</option>
         <option value="Custom">Custom Text</option>
     </select>
@@ -65,7 +64,7 @@
         <button id="sendBtn">Update Display</button>
         <span id="settingsBtn" class="iconBtn">⚙️</span>
     </div>
-</div>
+</main>
 
 <!-- Modal for Settings -->
 <div id="settingsModal" class="modal hidden">
@@ -83,54 +82,38 @@
         </div>
 
         <div class="time">
-            <label for="timezone">Timezone:</label>
-            <select id="timezone">
-                <!-- Europe -->
-                <option value="CET-1CEST,M3.5.0,M10.5.0/3">Central Europe (CET)</option>
-                <option value="GMT0BST,M3.5.0/1,M10.5.0">United Kingdom (GMT)</option>
-
-                <!-- Americas -->
-                <option value="EST5EDT,M3.2.0,M11.1.0">US Eastern (EST)</option>
-                <option value="CST6CDT,M3.2.0,M11.1.0">US Central (CST)</option>
-                <option value="PST8PDT,M3.2.0,M11.1.0">US Pacific (PST)</option>
-                <option value="AST4">South America (Argentina)</option>
-
-                <!-- Asia -->
-                <option value="IST-5:30">India Standard Time (IST)</option>
-                <option value="CST-8">China Standard Time (CST)</option>
-                <option value="JST-9">Japan Standard Time (JST)</option>
-
-                <!-- Oceania -->
-                <option value="AEST-10AEDT,M10.1.0,M4.1.0/3">Australia (AEST)</option>
-                <option value="NZST-12NZDT,M9.5.0,M4.1.0/3">New Zealand (NZST)</option>
-
-                <!-- Africa -->
-                <option value="EAT-3">East Africa (EAT)</option>
-                <option value="WAT-1">West Africa (WAT)</option>
-
-                <!-- Middle East -->
-                <option value="GST-4">Gulf Standard Time (UAE)</option>
-            </select>
-
-            <label>24-Hour Format</label>
-            <label class="switch">
-                <input type="checkbox" id="format-24-toggle">
-                <span class="slider"></span>
-            </label>
+            <div>
+                <label for="timezone">Timezone:</label>
+                <select id="timezone" name="timezone">
+                    <option disabled selected value="">Loading timezones...</option>
+                </select>
+            </div>
+            <div class="switch-container">
+                <label>24-Hour Format</label>
+                <label class="switch">
+                    <input type="checkbox" id="format-24-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <div class="mqtt">
-            <label for="mqtt-server">MQTT Server:</label>
-            <input type="text" id="mqtt-server" placeholder="e.g. 192.168.1.10">
-
-            <label for="mqtt-port">MQTT Port:</label>
-            <input type="number" id="mqtt-port" value="1883" min="1">
-
-            <label for="mqtt-user">MQTT Username:</label>
-            <input type="text" id="mqtt-user" placeholder="optional">
-
-            <label for="mqtt-password">MQTT Password:</label>
-            <input type="password" id="mqtt-password" placeholder="optional">
+            <div>
+                <label for="mqtt-server">MQTT Server:</label>
+                <input type="text" id="mqtt-server" placeholder="e.g. 192.168.1.10">
+            </div>
+            <div>
+                <label for="mqtt-port">MQTT Port:</label>
+                <input type="number" id="mqtt-port" value="1883" min="1">
+            </div>
+            <div>
+                <label for="mqtt-user">MQTT Username:</label>
+                <input type="text" id="mqtt-user" placeholder="optional">
+            </div>
+            <div>
+                <label for="mqtt-password">MQTT Password:</label>
+                <input type="password" id="mqtt-password" placeholder="optional">
+            </div>
         </div>
 
         <div class="actions">

@@ -1,3 +1,4 @@
+/* General */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -16,7 +17,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-.container {
+main.container {
     align-items: center;
     justify-content: center;
     display: flex;
@@ -24,7 +25,8 @@ body {
     background: #222;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #333;
+    box-shadow: 0 0 20px 0 #333;
     max-width: 500px;
     width: 95%;
     text-align: center;
@@ -45,6 +47,26 @@ h1:before {
     top: 50%;
 }
 
+.footer {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 30px;
+}
+
+.iconBtn {
+    cursor: pointer;
+    font-size: 2em;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.full-container {
+    width: 100%;
+}
+
+/* Buttons */
 button {
     display: block;
     padding: 20px;
@@ -55,12 +77,13 @@ button {
     border: 1px solid white;
     border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.2s;
     text-transform: uppercase;
 }
 
 button:hover {
     background-color: #4CAF50;
+    box-shadow: 0 0 20px 0 #4CAF50;
 }
 
 button.small {
@@ -69,24 +92,72 @@ button.small {
     font-size: 1em;
 }
 
-a {
-    color: #4CAF50;
+
+.actions {
+    display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    margin: 30px 0;
 }
 
-.submitButton {
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    min-height: 50px;
+    align-items: center;
+}
+
+.tag {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 16px;
+    height: 50px;
+}
+
+.tag button {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 3px;
+    align-self: center;
+}
+
+.addButton {
+    display: flex;
+    align-items: center;
     margin-top: 15px;
-    width: 100%;
+    width: 40%;
     padding: 12px;
     font-size: 1em;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
+a {
+    color: #4CAF50;
+}
+
+/* Inputs */
+
 label {
     display: block;
     margin: 10px 0;
-    font-size: 1em;
+    font-size: 1.2em;
     font-weight: bold;
+    text-align: center;
 }
 
 input, select {
@@ -103,72 +174,14 @@ input, select {
 input[readonly] {
     border: 0;
     background: transparent;
+    padding: 0;
 }
 
-.footer {
-    font-size: 0.8em;
-    color: #777;
-    margin-top: 30px;
-}
-
-.iconBtn {
-    cursor: pointer;
-    font-size: 2em;
-}
-
-#settingsBtn {
-    position: absolute;
-    right: 0;
-}
-
-#change-wifi-link {
-    margin: 10px 0;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.input-container {
     display: flex;
+    gap: 10px;
     align-items: center;
-    justify-content: center;
-    background-color: rgba(34, 34, 34, 0.75);
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 500px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-content .close {
-    align-self: flex-end;
-    font-size: 3em;
-    width: 55px;
-    height: 55px;
-    text-align: right;
-}
-
-.options-container {
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-.options-container > div {
-    width: 100%;
-    display: none;
-    flex-wrap: wrap;
+    margin-top: 10px;
 }
 
 .switch-container {
@@ -176,21 +189,7 @@ input[readonly] {
     display: flex;
     gap: 10px;
     justify-content: center;
-}
-
-.actions {
-    display: flex;
-    position: relative;
-    width: 100%;
-    justify-content: center;
     align-items: center;
-    margin: 30px 0;
-}
-
-.switch-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     margin: 10px 0;
 }
 
@@ -240,63 +239,58 @@ input:checked + .slider:before {
     transform: translateX(26px);
 }
 
-.tag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px;
-    border: 2px solid #4CAF50;
-    border-radius: 8px;
-    min-height: 50px;
-    align-items: center;
+/* Modal */
+body.modal-open {
+    overflow: hidden;
 }
 
-.tag {
-    background-color: #4CAF50;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 15px;
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 16px;
-    height: 50px;
+    justify-content: center;
+    background-color: rgba(34, 34, 34, 0.75);
+    backdrop-filter: blur(5px);
 }
 
-.tag button {
-    background: none;
-    border: none;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 3px;
-    align-self: center;
-}
-
-.input-container {
+.modal-content {
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
     display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid #333;
+    box-shadow: 0 0 20px 0 #333;
 }
+
+.modal-content .close {
+    font-size: 3em;
+    width: 55px;
+    height: 55px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    transition: 0.2s all;
+}
+
+.close:hover {
+    color: #af221e;
+}
+
+/* Text Mode */
 
 #delay-container {
     margin-top: 10px;
-}
-
-.addButton {
-    display: flex;
-    align-items: center;
-    margin-top: 15px;
-    width: 40%;
-    padding: 12px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.full-container {
-    width: 100%;
 }
 
 .add-word-container {
@@ -309,4 +303,49 @@ input:checked + .slider:before {
 .add-word-container input {
     flex-grow: 1;
     width: 50%;
+}
+
+
+/* Settings */
+#settingsBtn {
+    position: absolute;
+    right: 0;
+}
+
+#settingsModal .modal-content > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#settingsModal .modal-content > div > div {
+    flex-grow: 1;
+}
+
+#settingsModal .mqtt {
+    gap: 10px;
+}
+
+.mqtt > div {
+    width: calc(50% - 10px);
+}
+
+#change-wifi-link {
+    margin: 10px 0;
+}
+
+#settingsModal #wifi-password-group {
+    width: 100%;
+}
+
+.options-container {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.options-container > div {
+    width: 100%;
+    display: none;
+    flex-wrap: wrap;
 }

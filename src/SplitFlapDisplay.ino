@@ -76,9 +76,9 @@ void setup() {
   }
   else{
     webServer.startWebServer(); //Start Webserver
-    //display.writeString("OK");
+    display.writeString("OK");
     delay(250);
-    //display.writeString("");
+    display.writeString("");
 
     mqttClient.setServer(mqtt_server.c_str(), mqtt_port);
     mqttClient.setCallback(handleMqttMessage);

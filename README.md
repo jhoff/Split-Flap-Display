@@ -8,6 +8,7 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 ## Features
 - Fully 3D Printed Modular Split Flap Display with 37 Characters Per Module
 - Small Size, 8 Modules are 320mm, 3 Modules are 130mm Wide. 80mm Tall
+- OTA updates
 - Fully configurable and controllable via Web Interface
     - Switch Between Operation Modes, modes include custom input, date mode, and time mode
     - Configure WiFi, Timezone, and hardware settings
@@ -23,10 +24,10 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 - Option to have messages complete at the same time ( delayed start )
 
 ## Supported boards
-| Environment          | Processor     | Tested Boards                                                |
-| -------------------- | ------------- | ------------------------------------------------------------ |
-| `esp32_c3` (default) | ESP32-C3FN4   | Teyleten Robot ESP32-C3-SuperMini<br>Waveshare ESP32-C3-Zero |
-| `esp32_s3`           | ESP32-S3FH4R2 | Waveshare ESP32-S3-Zero<sup>*</sup>                          |
+| Environment          | Processor     | Tested Boards                                                                     |
+| -------------------- | ------------- | --------------------------------------------------------------------------------- |
+| `esp32_c3` (default) | ESP32-C3FN4   | Teyleten Robot ESP32-C3-SuperMini<br>Waveshare ESP32-C3-Zero                      |
+| `esp32_s3`           | ESP32-S3FH4R2 | Waveshare ESP32-S3-Zero<sup>\*</sup><br>Waveshare ESP32-S3-Supermini<sup>\*</sup> |
 
 <sub>* Requires manually resetting the board into firmware upload mode by holding BOOT, pressing & releasing RESET, then releasing BOOT prior to upload. After uploading is successful, either press & release RESET or power cycle the board to put it in normal operation mode.</sub>
 
@@ -48,6 +49,9 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
   * Compiles and uploads the esp32 firmware ( `npm run pio:firmware` or `pio run -t upload -e <environment>` )
   * Compiles and uploads the littlefs filesystem ( `npm run pio:filesystem` or `pio run -t uploadfs -e <environment>` )
 1. Enjoy!
+
+### Using OTA
+Before you are able to make any OTA updates, you need to flash the initial firmware via USB first using the standard environment for your device - ie `esp32_s3`. Then once the device is connected to your network and you can access `splitflap.local` via the browser, you can upload a new firmware and/or filesystem by using the device environment with `*_ota` appended - ie `esp32_s3_ota`
 
 ## Contributing
 

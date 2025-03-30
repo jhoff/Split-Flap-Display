@@ -10,26 +10,30 @@
 #include <ESPAsyncWebServer.h> //by ESP32Async, Requires AsyncTCP by ESP32Async
 #include <ESPmDNS.h>
 #include <WiFi.h>
+#include <ArduinoOTA.h>
 
 class SplitFlapWebServer {
 public:
   SplitFlapWebServer(JsonSettings &settings);
   void init();
   void setTimezone();
+  void checkRebootRequired();
 
   // Wifi Connectivity
-  bool loadWiFiCredentials();
-  bool connectToWifi();
-  bool getAttemptReconnect() const { return attemptReconnect; }
-  void setAttemptReconnect(bool input) { attemptReconnect = input; }
-  void startWebServer();
-  void endMDNS();
-  void startMDNS();
-  void startAccessPoint();
-  void checkWiFi();
-  unsigned long getLastCheckWifiTime() { return lastCheckWifiTime; }
-  void setLastCheckWifiTime(unsigned long input) { lastCheckWifiTime = input; }
-  int getWifiCheckInterval() { return wifiCheckInterval; }
+    bool loadWiFiCredentials();
+    bool connectToWifi();
+    bool getAttemptReconnect() const { return attemptReconnect; }
+    void setAttemptReconnect(bool input) { attemptReconnect = input; }
+    void startWebServer();
+    void endMDNS();
+    void startMDNS();
+    void enableOta();
+    void handleOta();
+    void startAccessPoint();
+    void checkWiFi();
+    unsigned long getLastCheckWifiTime() { return lastCheckWifiTime; }
+    void setLastCheckWifiTime(unsigned long input) { lastCheckWifiTime = input; }
+    int getWifiCheckInterval() { return wifiCheckInterval; }
 
   // Mode
   int getMode();
@@ -89,6 +93,7 @@ private:
   String
       writtenString; // string for whatever is currently written to the display
 
+  bool rebootRequired;
   bool attemptReconnect;
   unsigned long lastCheckWifiTime;
   int wifiCheckInterval;

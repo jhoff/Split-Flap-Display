@@ -12,6 +12,7 @@ JsonSettings settings = JsonSettings("config", {
     // General Settings
     {"name", JsonSetting("My Display")},
     {"mdns", JsonSetting("splitflap")},
+    {"otaPass", JsonSetting("quackquack")},
     {"timezone", JsonSetting("Etc/UTC")},
     // Wifi Settings
     {"ssid", JsonSetting("")},
@@ -46,6 +47,7 @@ void setup() {
 
   if (! webServer.connectToWifi()) {
     webServer.startAccessPoint();
+    webServer.enableOta();
     webServer.startMDNS();
     webServer.startWebServer();
 
@@ -60,6 +62,7 @@ void setup() {
     }
   }
   else{
+    webServer.enableOta();
     webServer.startMDNS();
     webServer.startWebServer();
 
@@ -104,10 +107,12 @@ void loop() {
       break;
   }
 
+  webServer.handleOta();
   checkConnection();
 
   reconnectIfNeeded();
 
+  webServer.checkRebootRequired();
   yield();
 }
 
@@ -245,10 +250,12 @@ void reconnectIfNeeded(){
     display.writeString("");
     if (! webServer.connectToWifi()) {
       webServer.startAccessPoint();
+      webServer.enableOta();
       webServer.endMDNS();
       webServer.startMDNS();
       display.writeChar('X');
     } else {
+      webServer.enableOta();
       webServer.endMDNS();
       webServer.startMDNS();
       display.writeString("OK");

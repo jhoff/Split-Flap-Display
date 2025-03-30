@@ -1,11 +1,13 @@
 // Split Flap Display
 // Morgan Manly 02/16/2025
 // Jordan Hoff 03/25/2025
+// Thom Koopman 03/30/2025
 
 // Enjoy :)
 #include "Arduino.h"
 #include "SplitFlapDisplay.h"
 #include "SplitFlapWebServer.h"
+#include "SplitFlapMqtt.h"
 #include "JsonSettings.h"
 
 JsonSettings settings = JsonSettings("config", {
@@ -16,6 +18,11 @@ JsonSettings settings = JsonSettings("config", {
     // Wifi Settings
     {"ssid", JsonSetting("")},
     {"password", JsonSetting("")},
+    // MQTT Settings
+    {"mqtt_server", JsonSetting("")},
+    {"mqtt_port", JsonSetting(1883)},
+    {"mqtt_user", JsonSetting("")},
+    {"mqtt_pass", JsonSetting("")},
     // Hardware Settings
     {"moduleCount", JsonSetting(8)},
     {"moduleAddresses", JsonSetting({0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27})},
@@ -32,6 +39,9 @@ JsonSettings settings = JsonSettings("config", {
 
 SplitFlapDisplay display(settings);
 SplitFlapWebServer webServer(settings);
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
+SplitFlapMqtt splitflapMqtt(mqttClient, settings);
 
 void setup() {
   // put your setup code here, to run once:
@@ -64,44 +74,28 @@ void setup() {
     webServer.startWebServer();
 
     display.init();
+    splitflapMqtt.setup();
+    splitflapMqtt.setDisplay(&display);
     display.homeToString("");
 
     display.writeString("OK");
     delay(250);
     display.writeString("");
   }
-
 }
 
 void loop() {
+  splitflapMqtt.loop();
 
   // check what mode the display is in, this value is updated by the web server
   switch (webServer.getMode()) {
-    case 0: { //single input mode
-      singleInputMode();
-      break;
-    }
-    case 1: { //multi input mode
-      multiInputMode();
-      break;
-    }
-    case 2: {//Date Mode
-      dateMode();
-      break;
-    }
-    case 3: {//Time Mode
-      timeMode();
-      break;
-    }
-    case 4: {//Count Mode
-      break;
-    }
-    case 5: {//Random Test Mode
-      randomTest();
-      break;
-    }
-    default:
-      break;
+    case 0: singleInputMode(); break;
+    case 1: multiInputMode(); break;
+    case 2: dateMode(); break;
+    case 3: timeMode(); break;
+    case 4: break;
+    case 5: randomTest(); break;
+    default: break;
   }
 
   checkConnection();
@@ -136,44 +130,19 @@ void multiInputMode() {
 void dateMode() {
   if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
     webServer.setLastCheckDateTime(millis());
-    //get date and output to display
     String outputString = " ";
-    switch(display.getNumModules()) {
-      case 1: {
-        break;
-      }
-      case 2: {
-        outputString = webServer.getCurrentDay();
-        break;
-      }
-      case 3: {
-        outputString = webServer.getDayPrefix(3);
-        break;
-      }
-      case 4: {
-        outputString = " " + webServer.getCurrentDay() + " ";
-        break;
-      }
-      case 5: {
-        outputString = String(webServer.getDayPrefix(3)) + webServer.getCurrentDay();
-        break;
-      }
-      case 6: {
-        outputString = String(webServer.getDayPrefix(3)) + " " + webServer.getCurrentDay();
-        break;
-      }
-      case 7: {
-        outputString = String(webServer.getDayPrefix(3)) + "  " + webServer.getCurrentDay();
-        break;
-      }
-      case 8: {
-        outputString = String(webServer.getDayPrefix(3)) + webServer.getCurrentDay() + webServer.getMonthPrefix(3);
-        break;
-      }
+    switch (display.getNumModules()) {
+      case 2: outputString = webServer.getCurrentDay(); break;
+      case 3: outputString = webServer.getDayPrefix(3); break;
+      case 4: outputString = " " + webServer.getCurrentDay() + " "; break;
+      case 5: outputString = webServer.getDayPrefix(3) + webServer.getCurrentDay(); break;
+      case 6: outputString = webServer.getDayPrefix(3) + " " + webServer.getCurrentDay(); break;
+      case 7: outputString = webServer.getDayPrefix(3) + "  " + webServer.getCurrentDay(); break;
+      case 8: outputString = webServer.getDayPrefix(3) + webServer.getCurrentDay() + webServer.getMonthPrefix(3); break;
+      default: break;
     }
-
-    if (outputString!=webServer.getWrittenString()){
-      display.homeToString(outputString,10);
+    if (outputString != webServer.getWrittenString()) {
+      display.homeToString(outputString, settings.getFloat("maxVel"));
       webServer.setWrittenString(outputString);
     }
   }
@@ -182,46 +151,20 @@ void dateMode() {
 void timeMode() {
   if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
     webServer.setLastCheckDateTime(millis());
-    //get time
     String outputString = " ";
-    switch(display.getNumModules()) {
-      case 1: {
-        break;
-      }
-      case 2: {
-        outputString = webServer.getCurrentMinute();
-        break;
-      }
-      case 3: {
-        outputString = " " + webServer.getCurrentMinute();
-        break;
-      }
-      case 4: {
-        outputString = webServer.getCurrentHour() + webServer.getCurrentMinute();
-        break;
-      }
-      case 5: {
-        outputString = webServer.getCurrentHour() +" "+ webServer.getCurrentMinute();
-        break;
-      }
-      case 6: {
-        outputString = " " + webServer.getCurrentHour() +" "+ webServer.getCurrentMinute();
-        break;
-      }
-      case 7: {
-        outputString = " " + webServer.getCurrentHour() +" "+ webServer.getCurrentMinute() + " ";
-        break;
-      }
-      case 8: {
-        outputString = "  " + webServer.getCurrentHour() + webServer.getCurrentMinute() + "  ";
-        break;
-      }
-      default:
-        break;
+    switch (display.getNumModules()) {
+      case 2: outputString = webServer.getCurrentMinute(); break;
+      case 3: outputString = " " + webServer.getCurrentMinute(); break;
+      case 4: outputString = webServer.getCurrentHour() + webServer.getCurrentMinute(); break;
+      case 5: outputString = webServer.getCurrentHour() + " " + webServer.getCurrentMinute(); break;
+      case 6: outputString = " " + webServer.getCurrentHour() + " " + webServer.getCurrentMinute(); break;
+      case 7: outputString = " " + webServer.getCurrentHour() + " " + webServer.getCurrentMinute() + " "; break;
+      case 8: outputString = "  " + webServer.getCurrentHour() + webServer.getCurrentMinute() + "  "; break;
+      default: break;
     }
 
-    if (outputString!=webServer.getWrittenString()){
-      display.writeString(outputString,10,false);
+    if (outputString != webServer.getWrittenString()) {
+      display.writeString(outputString, settings.getFloat("maxVel"), false);
       webServer.setWrittenString(outputString);
     }
   }
@@ -257,6 +200,9 @@ void reconnectIfNeeded(){
       display.writeString("");
       webServer.setWrittenString("");
     }
+    Serial.println("[MQTT] 2");
+    splitflapMqtt.setup();
+    splitflapMqtt.reconnect();
   }
 }
 

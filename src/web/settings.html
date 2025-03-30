@@ -154,6 +154,44 @@
             <h2
                 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-6 mb-4"
             >
+                MQTT Settings
+            </h2>
+
+            <label class="block text-left text-lg mt-4">MQTT Server</label>
+            <input
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
+                type="text"
+                x-model="settings.mqtt_server"
+                placeholder="e.g. 192.168.1.10"
+            />
+
+            <label class="block text-left text-lg mt-4">MQTT Port</label>
+            <input
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
+                type="number"
+                x-model="settings.mqtt_port"
+                placeholder="1883"
+            />
+
+            <label class="block text-left text-lg mt-4">MQTT Username</label>
+            <input
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
+                type="text"
+                x-model="settings.mqtt_user"
+                placeholder="optional"
+            />
+
+            <label class="block text-left text-lg mt-4">MQTT Password</label>
+            <input
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
+                type="password"
+                x-model="settings.mqtt_pass"
+                placeholder="optional"
+            />
+
+            <h2
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-6 mb-4"
+            >
                 Hardware Settings
             </h2>
 

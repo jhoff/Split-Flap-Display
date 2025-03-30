@@ -8,6 +8,7 @@
 #include "Arduino.h"
 #include "SplitFlapDisplay.h"
 #include "SplitFlapWebServer.h"
+#include "SplitFlapMqtt.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <Preferences.h>
@@ -20,14 +21,11 @@ SplitFlapDisplay display; //Create Display Object
 SplitFlapWebServer webServer; //Create Webserver Object
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
+SplitFlapMqtt splitflapMqtt(mqttClient);
 Preferences prefs;
 
 String ssid, password, mqtt_server, mqtt_user, mqtt_pass;
 int mqtt_port;
-
-const char* mqtt_topic_command = "homeassistant/text/splitflap_display/set";
-const char* mqtt_topic_state   = "homeassistant/text/splitflap_display/state";
-const char* mqtt_topic_config  = "homeassistant/text/splitflap_display/config";
 
 void reconnectMQTT();
 void handleMqttMessage(char* topic, byte* payload, unsigned int length);
@@ -80,14 +78,14 @@ void setup() {
     delay(250);
     display.writeString("");
 
-    mqttClient.setServer(mqtt_server.c_str(), mqtt_port);
-    mqttClient.setCallback(handleMqttMessage);
-    reconnectMQTT();
+    splitflapMqtt.setup(mqtt_server, mqtt_port, mqtt_user, mqtt_pass);
+    splitflapMqtt.setMessageCallback(handleMqttMessage);
+    splitflapMqtt.reconnect();
   }
 }
 
 void loop() {
-  mqttClient.loop();
+  splitflapMqtt.loop();
 
   switch (webServer.getMode()) {
     case 0: singleInputMode(); break;
@@ -206,7 +204,8 @@ void reconnectIfNeeded(){
     mqtt_pass = prefs.getString("mqtt_pass", "");
     prefs.end();
 
-    reconnectMQTT();
+    splitflapMqtt.setup(mqtt_server, mqtt_port, mqtt_user, mqtt_pass);
+    splitflapMqtt.reconnect();
 
     webServer.clearMqttReconnectFlag();
   }
@@ -289,7 +288,7 @@ void handleMqttMessage(char* topic, byte* payload, unsigned int length) {
   Serial.println(message);
 
   display.writeString(message, MAX_RPM, true);
-  mqttClient.publish(mqtt_topic_state, message.c_str(), true);
+  splitflapMqtt.publishState(message);
 }
 
 //          __

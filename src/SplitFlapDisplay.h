@@ -9,6 +9,8 @@
 #define MAX_MODULES 8 // for memory allocation, update if more modules
 #define MAX_RPM 15.0f
 
+class SplitFlapMqtt;
+
 class SplitFlapDisplay {
 public:
   SplitFlapDisplay(JsonSettings &settings);
@@ -33,6 +35,7 @@ public:
   void testCount();
   void testRandom(float speed = MAX_RPM);
   int getNumModules() { return numModules; }
+  void setMqtt(SplitFlapMqtt* mqttHandler);
 
 private:
   JsonSettings &settings;
@@ -53,6 +56,8 @@ private:
   int magnetPosition; // position of drum wheel when magnet is detected
   int SDAPin;         // SDA pin
   int SCLPin;         // SCL pin
+
+  SplitFlapMqtt* mqtt = nullptr;
 };
 
 #endif

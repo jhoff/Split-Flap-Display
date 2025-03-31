@@ -2,26 +2,27 @@
 
 #include "JsonSettings.h"
 #include "SplitFlapDisplay.h"
-#include <AsyncMqttClient.h>
-#include <Ticker.h>
+#include <PubSubClient.h>
+#include <WiFiClient.h>
 
 class SplitFlapMqtt {
 public:
-    SplitFlapMqtt(JsonSettings& settings);
+    SplitFlapMqtt(JsonSettings& settings, WiFiClient& client); // updated constructor
 
     void setup();
+    void loop(); // needed for PubSubClient3
     void publishState(const String& message);
     void setDisplay(SplitFlapDisplay* display);
+    bool isConnected();
 
 private:
-    AsyncMqttClient mqttClient;
-    Ticker mqttReconnectTimer;
+    PubSubClient mqttClient;             // PubSubClient instead of AsyncMqttClient
+    WiFiClient& wifiClient;              // store reference to WiFiClient
+
     JsonSettings& settings;
     SplitFlapDisplay* display;
 
     void connectToMqtt();
-    static void staticReconnectCallback();
-    static SplitFlapMqtt* instance;
 
     // MQTT config
     String mqttServer;
@@ -33,7 +34,6 @@ private:
     String mqtt_topic_config;
     String mqtt_topic_avail;
 
-    // Internal reconnect tracking (optional)
     unsigned long lastAttempt = 0;
     int retryCount = 0;
 };

@@ -9,7 +9,7 @@
 #include "SplitFlapWebServer.h"
 #include "SplitFlapMqtt.h"
 #include "JsonSettings.h"
-#include <AsyncMqttClient.h>
+#include <WiFiClient.h>
 
 JsonSettings settings = JsonSettings("config", {
     // General Settings
@@ -38,9 +38,10 @@ JsonSettings settings = JsonSettings("config", {
     {"mode", JsonSetting(0)}
 });
 
+WiFiClient wifiClient;
 SplitFlapDisplay display(settings);
 SplitFlapWebServer webServer(settings);
-SplitFlapMqtt splitflapMqtt(settings);
+SplitFlapMqtt splitflapMqtt(settings, wifiClient);
 
 void setup() {
   // put your setup code here, to run once:
@@ -85,6 +86,8 @@ void setup() {
 }
 
 void loop() {
+  splitflapMqtt.loop();
+
   // check what mode the display is in, this value is updated by the web server
   switch (webServer.getMode()) {
     case 0: singleInputMode(); break;
@@ -163,7 +166,7 @@ void timeMode() {
       case 5: outputString = currentHour + " " + currentMinute; break;
       case 6: outputString = " " + currentHour + " " + currentMinute; break;
       case 7: outputString = " " + currentHour + " " + currentMinute + " "; break;
-      case 8: outputString = "  " + currentHour + "" + currentMinute + "  "; break;
+      case 8: outputString = " " + currentHour + currentMinute + " "; break;
       default: break;
     }
 

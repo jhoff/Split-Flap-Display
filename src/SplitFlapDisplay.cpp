@@ -2,10 +2,6 @@
 #include "JsonSettings.h"
 #include "SplitFlapModule.h"
 #include "SplitFlapMqtt.h"
-#include <AsyncMqttClient.h>
-
-extern const char* mqtt_topic_state;
-extern String mqtt_server;
 
 SplitFlapDisplay::SplitFlapDisplay(JsonSettings &settings)
     : settings(settings) {}
@@ -213,8 +209,8 @@ void SplitFlapDisplay::writeString(String inputString, float speed,
   }
   moveTo(targetPositions, speed);
 
-  if (mqtt) {
-    mqtt->publishState(displayString);
+  if (mqtt && mqtt->isConnected()) {
+      mqtt->publishState(displayString);
   }
 }
 

@@ -329,15 +329,6 @@ void SplitFlapWebServer::startWebServer() {
               "http://" + json["mdns"].as<String>() + ".local/settings.html";
         }
 
-        if (!settings.fromJson(json)) {
-          response["message"] = "Failed to save settings";
-          response["type"] = "error";
-          response["errors"]["key"] = settings.getLastValidationKey();
-          response["errors"]["message"] = settings.getLastValidationError();
-          return request->send(400, "application/json", response.as<String>());
-        }
-
-        // Check for MQTT setting changes
         if ((json["mqtt_server"].is<String>() &&
              json["mqtt_server"].as<String>() != settings.getString("mqtt_server")) ||
             (json["mqtt_port"].is<int>() &&
@@ -346,8 +337,16 @@ void SplitFlapWebServer::startWebServer() {
              json["mqtt_user"].as<String>() != settings.getString("mqtt_user")) ||
             (json["mqtt_pass"].is<String>() &&
              json["mqtt_pass"].as<String>() != settings.getString("mqtt_pass"))) {
+          response["message"] = "Mqtt settings have changed, reconnecting...";
           reconnect = true;
-          response["message"] = "Settings updated successfully, MQTT settings changed. Attempting reconnect...";
+        }
+
+        if (!settings.fromJson(json)) {
+          response["message"] = "Failed to save settings";
+          response["type"] = "error";
+          response["errors"]["key"] = settings.getLastValidationKey();
+          response["errors"]["message"] = settings.getLastValidationError();
+          return request->send(400, "application/json", response.as<String>());
         }
 
         response["type"] = "success";

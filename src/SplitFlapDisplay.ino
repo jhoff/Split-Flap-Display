@@ -9,6 +9,7 @@
 #include "SplitFlapWebServer.h"
 #include "SplitFlapMqtt.h"
 #include "JsonSettings.h"
+#include <AsyncMqttClient.h>
 
 JsonSettings settings = JsonSettings("config", {
     // General Settings
@@ -39,9 +40,7 @@ JsonSettings settings = JsonSettings("config", {
 
 SplitFlapDisplay display(settings);
 SplitFlapWebServer webServer(settings);
-WiFiClient espClient;
-PubSubClient mqttClient(espClient);
-SplitFlapMqtt splitflapMqtt(mqttClient, settings);
+SplitFlapMqtt splitflapMqtt(settings);
 
 void setup() {
   // put your setup code here, to run once:
@@ -86,8 +85,6 @@ void setup() {
 }
 
 void loop() {
-  splitflapMqtt.loop();
-
   // check what mode the display is in, this value is updated by the web server
   switch (webServer.getMode()) {
     case 0: singleInputMode(); break;
@@ -131,19 +128,22 @@ void multiInputMode() {
 void dateMode() {
   if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
     webServer.setLastCheckDateTime(millis());
+    String currentDay = webServer.getCurrentDay();
+    String dayPrefix = webServer.getDayPrefix(3);
+
     String outputString = " ";
     switch (display.getNumModules()) {
-      case 2: outputString = webServer.getCurrentDay(); break;
-      case 3: outputString = webServer.getDayPrefix(3); break;
-      case 4: outputString = " " + webServer.getCurrentDay() + " "; break;
-      case 5: outputString = webServer.getDayPrefix(3) + webServer.getCurrentDay(); break;
-      case 6: outputString = webServer.getDayPrefix(3) + " " + webServer.getCurrentDay(); break;
-      case 7: outputString = webServer.getDayPrefix(3) + "  " + webServer.getCurrentDay(); break;
-      case 8: outputString = webServer.getDayPrefix(3) + webServer.getCurrentDay() + webServer.getMonthPrefix(3); break;
+      case 2: outputString = currentDay; break;
+      case 3: outputString = dayPrefix; break;
+      case 4: outputString = " " + currentDay + " "; break;
+      case 5: outputString = dayPrefix + currentDay; break;
+      case 6: outputString = dayPrefix + " " + currentDay; break;
+      case 7: outputString = dayPrefix + "  " + currentDay; break;
+      case 8: outputString = dayPrefix + currentDay + webServer.getMonthPrefix(3); break;
       default: break;
     }
     if (outputString != webServer.getWrittenString()) {
-      display.homeToString(outputString, settings.getFloat("maxVel"));
+      display.homeToString(outputString, settings.getFloat("maxVel"), webServer.getCentering());
       webServer.setWrittenString(outputString);
     }
   }
@@ -152,20 +152,23 @@ void dateMode() {
 void timeMode() {
   if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
     webServer.setLastCheckDateTime(millis());
+    String currentHour = webServer.getCurrentHour();
+    String currentMinute = currentMinute;
     String outputString = " ";
+
     switch (display.getNumModules()) {
-      case 2: outputString = webServer.getCurrentMinute(); break;
-      case 3: outputString = " " + webServer.getCurrentMinute(); break;
-      case 4: outputString = webServer.getCurrentHour() + webServer.getCurrentMinute(); break;
-      case 5: outputString = webServer.getCurrentHour() + " " + webServer.getCurrentMinute(); break;
-      case 6: outputString = " " + webServer.getCurrentHour() + " " + webServer.getCurrentMinute(); break;
-      case 7: outputString = " " + webServer.getCurrentHour() + " " + webServer.getCurrentMinute() + " "; break;
-      case 8: outputString = "  " + webServer.getCurrentHour() + webServer.getCurrentMinute() + "  "; break;
+      case 2: outputString = currentMinute; break;
+      case 3: outputString = " " + currentMinute; break;
+      case 4: outputString = currentHour + "" + currentMinute; break;
+      case 5: outputString = currentHour + " " + currentMinute; break;
+      case 6: outputString = " " + currentHour + " " + currentMinute; break;
+      case 7: outputString = " " + currentHour + " " + currentMinute + " "; break;
+      case 8: outputString = "  " + currentHour + "" + currentMinute + "  "; break;
       default: break;
     }
 
     if (outputString != webServer.getWrittenString()) {
-      display.writeString(outputString, settings.getFloat("maxVel"), false);
+      display.writeString(outputString, settings.getFloat("maxVel"), webServer.getCentering());
       webServer.setWrittenString(outputString);
     }
   }
@@ -203,7 +206,6 @@ void reconnectIfNeeded(){
     }
 
     splitflapMqtt.setup();
-    splitflapMqtt.reconnect();
   }
 }
 

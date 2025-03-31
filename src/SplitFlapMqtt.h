@@ -1,32 +1,39 @@
 #pragma once
 
-#include <PubSubClient.h>
 #include "JsonSettings.h"
 #include "SplitFlapDisplay.h"
+#include <AsyncMqttClient.h>
+#include <Ticker.h>
 
 class SplitFlapMqtt {
 public:
-    SplitFlapMqtt(PubSubClient& client, JsonSettings& settings);
+    SplitFlapMqtt(JsonSettings& settings);
 
     void setup();
-    void loop();
-    void reconnect();
     void publishState(const String& message);
     void setDisplay(SplitFlapDisplay* display);
-    void publishDisplayContent(const String& message);
 
 private:
-    PubSubClient& mqttClient;
+    AsyncMqttClient mqttClient;
+    Ticker mqttReconnectTimer;
     JsonSettings& settings;
-    SplitFlapDisplay* display = nullptr;
+    SplitFlapDisplay* display;
 
+    void connectToMqtt();
+    static void staticReconnectCallback();
+    static SplitFlapMqtt* instance;
+
+    // MQTT config
     String mqttServer;
-    int mqttPort;
+    int mqttPort = 1883;
     String mqttUser;
     String mqttPass;
+    String mqtt_topic_command;
+    String mqtt_topic_state;
+    String mqtt_topic_config;
+    String mqtt_topic_avail;
 
+    // Internal reconnect tracking (optional)
     unsigned long lastAttempt = 0;
     int retryCount = 0;
-
-    void handleMessage(char* topic, byte* payload, unsigned int length);
 };

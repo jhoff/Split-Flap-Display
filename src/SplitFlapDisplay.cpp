@@ -2,9 +2,8 @@
 #include "JsonSettings.h"
 #include "SplitFlapModule.h"
 #include "SplitFlapMqtt.h"
-#include <PubSubClient.h>
+#include <AsyncMqttClient.h>
 
-extern PubSubClient mqttClient;
 extern const char* mqtt_topic_state;
 extern String mqtt_server;
 

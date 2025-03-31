@@ -29,10 +29,11 @@ private:
     int mqttPort = 1883;
     String mqttUser;
     String mqttPass;
-    String mqtt_topic_command;
-    String mqtt_topic_state;
-    String mqtt_topic_config;
-    String mqtt_topic_avail;
+    String topic_command;
+    String topic_state;
+    String topic_avail;
+    String topic_config_text;
+    String topic_config_sensor;
 
     unsigned long lastAttempt = 0;
     int retryCount = 0;

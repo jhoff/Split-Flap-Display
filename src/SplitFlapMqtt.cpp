@@ -12,10 +12,11 @@ void SplitFlapMqtt::setup() {
     String mdns = settings.getString("mdns");
     String name = settings.getString("name");
 
-    mqtt_topic_command = "homeassistant/text/" + mdns + "/set";
-    mqtt_topic_state   = "homeassistant/text/" + mdns + "/state";
-    mqtt_topic_config  = "homeassistant/text/" + mdns + "/config";
-    mqtt_topic_avail   = "homeassistant/text/" + mdns + "/availability";
+    topic_command = "splitflap/" + mdns + "/set";
+    topic_state   = "splitflap/" + mdns + "/state";
+    topic_avail   = "splitflap/" + mdns + "/availability";
+    topic_config_text  = "homeassistant/text/splitflap_text_" + mdns + "/config";
+    topic_config_sensor = "homeassistant/sensor/splitflap_sensor_" + mdns + "/config";
 
     mqttClient.setServer(mqttServer.c_str(), mqttPort);
     mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
@@ -46,27 +47,43 @@ void SplitFlapMqtt::connectToMqtt() {
         if (mqttClient.connected()) {
             Serial.println("[MQTT] Connected to broker");
 
-        String payload =
-            "{"
+            String mdns = settings.getString("mdns");
+
+            String payload_text = "{"
                 "\"name\":\"" + settings.getString("name") + "\","
-                "\"unique_id\":\"" + settings.getString("mdns") + "\","
-                "\"object_id\":\"" + settings.getString("mdns") + "\","
-                "\"command_topic\":\"" + mqtt_topic_command + "\","
-                "\"state_topic\":\"" + mqtt_topic_state + "\","
-                "\"availability_topic\":\"" + mqtt_topic_avail + "\","
+                "\"unique_id\":\"splitflap_text_" + mdns + "\","
+                "\"command_topic\":\"" + topic_command + "\","
+                "\"availability_topic\":\"" + topic_avail + "\","
                 "\"device\":{"
-                    "\"identifiers\":[\"" + settings.getString("mdns") + "\"],"
+                    "\"identifiers\":[\"splitflap_" + mdns + "\"],"
                     "\"name\":\"" + settings.getString("name") + "\","
                     "\"manufacturer\":\"SplitFlap\","
-                    "\"model\":\"SplitFlap Display \","
+                    "\"model\":\"SplitFlap Display\","
                     "\"sw_version\":\"1.0.0\""
                 "}"
             "}";
 
-            mqttClient.subscribe(mqtt_topic_command.c_str());
-            mqttClient.publish(mqtt_topic_avail.c_str(), "online", true);
-            mqttClient.publish(mqtt_topic_state.c_str(), "", true);
-            mqttClient.publish(mqtt_topic_config.c_str(), payload.c_str(), true);
+            String payload_sensor = "{"
+                "\"name\":\"" + settings.getString("name") + " (Sensor)\","
+                "\"unique_id\":\"splitflap_sensor_" + mdns + "\","
+                "\"state_topic\":\"" + topic_state + "\","
+                "\"availability_topic\":\"" + topic_avail + "\","
+                "\"device_class\":\"none\","
+                "\"entity_category\":\"diagnostic\","
+                "\"device\":{"
+                    "\"identifiers\":[\"splitflap_" + mdns + "\"],"
+                    "\"name\":\"" + settings.getString("name") + "\","
+                    "\"manufacturer\":\"SplitFlap\","
+                    "\"model\":\"SplitFlap Display\","
+                    "\"sw_version\":\"1.0.0\""
+                "}"
+            "}";
+
+            mqttClient.subscribe(topic_command.c_str());
+            mqttClient.publish(topic_avail.c_str(), "online", true);
+            mqttClient.publish(topic_state.c_str(), "", true);
+
+            mqttClient.publish(topic_config_text.c_str(), payload_text.c_str(), true);
         } else {
             Serial.println("[MQTT] Failed to connect");
         }
@@ -79,7 +96,7 @@ void SplitFlapMqtt::setDisplay(SplitFlapDisplay* d) {
 
 void SplitFlapMqtt::publishState(const String& message) {
     Serial.println("[MQTT] Publishing state: " + message);
-    mqttClient.publish(mqtt_topic_state.c_str(), message.c_str(), true);
+    mqttClient.publish(topic_state.c_str(), message.c_str(), true);
 }
 
 void SplitFlapMqtt::loop() {

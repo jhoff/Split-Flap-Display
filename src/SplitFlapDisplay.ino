@@ -76,6 +76,7 @@ void setup() {
     display.init();
     splitflapMqtt.setup();
     splitflapMqtt.setDisplay(&display);
+    display.setMqtt(&splitflapMqtt);
     display.homeToString("");
 
     display.writeString("OK");
@@ -200,7 +201,7 @@ void reconnectIfNeeded(){
       display.writeString("");
       webServer.setWrittenString("");
     }
-    Serial.println("[MQTT] 2");
+
     splitflapMqtt.setup();
     splitflapMqtt.reconnect();
   }

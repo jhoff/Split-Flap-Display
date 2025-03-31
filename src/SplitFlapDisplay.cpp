@@ -1,6 +1,12 @@
 #include "SplitFlapDisplay.h"
 #include "JsonSettings.h"
 #include "SplitFlapModule.h"
+#include "SplitFlapMqtt.h"
+#include <PubSubClient.h>
+
+extern PubSubClient mqttClient;
+extern const char* mqtt_topic_state;
+extern String mqtt_server;
 
 SplitFlapDisplay::SplitFlapDisplay(JsonSettings &settings)
     : settings(settings) {}
@@ -207,6 +213,10 @@ void SplitFlapDisplay::writeString(String inputString, float speed,
     targetPositions[i] = modules[i].getCharPosition(currentChar);
   }
   moveTo(targetPositions, speed);
+
+  if (mqtt) {
+    mqtt->publishState(displayString);
+  }
 }
 
 void SplitFlapDisplay::moveTo(int targetPositions[], float speed,
@@ -329,4 +339,8 @@ void SplitFlapDisplay::stopMotors() {
   for (int i = 0; i < numModules; i++) {
     modules[i].stop();
   }
+}
+
+void SplitFlapDisplay::setMqtt(SplitFlapMqtt* mqttHandler) {
+  mqtt = mqttHandler;
 }

@@ -13,6 +13,7 @@ public:
     void reconnect();
     void publishState(const String& message);
     void setDisplay(SplitFlapDisplay* display);
+    void publishDisplayContent(const String& message);
 
 private:
     PubSubClient& mqttClient;

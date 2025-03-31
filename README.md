@@ -50,8 +50,8 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
   * Compiles and uploads the littlefs filesystem ( `npm run pio:filesystem` or `pio run -t uploadfs -e <environment>` )
 1. Enjoy!
 
-### Using OTA
-Before you are able to make any OTA updates, you need to flash the initial firmware via USB first using the standard environment for your device - ie `esp32_s3`. Then once the device is connected to your network and you can access `splitflap.local` via the browser, you can upload a new firmware and/or filesystem by using the device environment with `*_ota` appended - ie `esp32_s3_ota`
+### Using OTA to update the firmware
+On the settings page set an OTA password to enable OTA updatable firmware. Use this same password for your `auth` flag in `platformio.ini`, and then use a device environment with `*_ota` appended (ie `esp32_s3_ota`) to upload a new firmware and/or filesystem
 
 ## Contributing
 

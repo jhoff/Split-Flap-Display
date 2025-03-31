@@ -180,8 +180,10 @@ void SplitFlapWebServer::checkRebootRequired() {
 
 void SplitFlapWebServer::handleOta() { ArduinoOTA.handle(); }
 void SplitFlapWebServer::enableOta() {
-  ArduinoOTA.end(); // End any previous OTA sessions
-
+  // Skip OTA initialisation if no password is set
+  if (settings.getString("otaPass") == "") {
+    return;
+  }
   ArduinoOTA.setHostname(
       settings.getString("mdns")
           .c_str()); // otherwise mdns name gets overwritten with default

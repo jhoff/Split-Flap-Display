@@ -12,7 +12,7 @@ JsonSettings settings = JsonSettings("config", {
     // General Settings
     {"name", JsonSetting("My Display")},
     {"mdns", JsonSetting("splitflap")},
-    {"otaPass", JsonSetting("quackquack")},
+    {"otaPass", JsonSetting("")},
     {"timezone", JsonSetting("Etc/UTC")},
     // Wifi Settings
     {"ssid", JsonSetting("")},

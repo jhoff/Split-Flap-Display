@@ -15,11 +15,11 @@ void SplitFlapMqtt::setup() {
 
     String mdns = settings.getString("mdns");
     String name = settings.getString("name");
+
     mqtt_topic_command = "homeassistant/text/" + mdns + "/set";
     mqtt_topic_state   = "homeassistant/text/" + mdns + "/state";
     mqtt_topic_config  = "homeassistant/text/" + mdns + "/config";
     mqtt_topic_avail   = "homeassistant/text/" + mdns + "/availability";
-
 
     mqttClient.onConnect([this, mdns, name](bool sessionPresent) {
         Serial.println("[MQTT] Connected to broker");
@@ -48,7 +48,6 @@ void SplitFlapMqtt::setup() {
         if (display) {
             float maxVel = settings.getFloat("maxVel");
             display->writeString(message, maxVel, false);
-            publishState(message);
         }
     });
 

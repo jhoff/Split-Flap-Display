@@ -143,7 +143,7 @@ void dateMode() {
       default: break;
     }
     if (outputString != webServer.getWrittenString()) {
-      display.homeToString(outputString, settings.getFloat("maxVel"), webServer.getCentering());
+      display.writeString(outputString, MAX_RPM, webServer.getCentering());
       webServer.setWrittenString(outputString);
     }
   }
@@ -153,7 +153,7 @@ void timeMode() {
   if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
     webServer.setLastCheckDateTime(millis());
     String currentHour = webServer.getCurrentHour();
-    String currentMinute = currentMinute;
+    String currentMinute = webServer.getCurrentMinute();
     String outputString = " ";
 
     switch (display.getNumModules()) {
@@ -168,7 +168,7 @@ void timeMode() {
     }
 
     if (outputString != webServer.getWrittenString()) {
-      display.writeString(outputString, settings.getFloat("maxVel"), webServer.getCentering());
+      display.writeString(outputString, MAX_RPM, webServer.getCentering());
       webServer.setWrittenString(outputString);
     }
   }

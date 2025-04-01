@@ -10,7 +10,6 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 
 - Fully 3D Printed Modular Split Flap Display with 37 Characters Per Module
 - Small Size, 8 Modules are 320mm, 3 Modules are 130mm Wide. 80mm Tall
-- OTA updates
 - Fully configurable and controllable via Web Interface
     - Switch Between Operation Modes, modes include custom input, date mode, and time mode
     - Configure WiFi, Timezone, and hardware settings

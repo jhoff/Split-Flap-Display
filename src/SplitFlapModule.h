@@ -6,51 +6,47 @@
 #include <Wire.h> //I2C Communication Between Modules
 
 class SplitFlapModule {
-public:
-  // Constructor declarationS
-  SplitFlapModule(); // default constructor required to allocate memory for
-                     // SplitFlapDisplay class
-  SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset,
-                  int magnetPos);
+  public:
+    // Constructor declarationS
+    SplitFlapModule(); // default constructor required to allocate memory for
+    // SplitFlapDisplay class
+    SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos);
 
-  void init();
+    void init();
 
-  void step(bool updatePosition = true); // step motor
-  void stop();                           // write all motor input pins to low
-  void start(); // re-energize coils to last position, not stepping motor
+    void step(bool updatePosition = true); // step motor
+    void stop(); // write all motor input pins to low
+    void start(); // re-energize coils to last position, not stepping motor
 
-  int getMagnetPosition() const {
-    return magnetPosition;
-  } // position where magnet is detected
-  int getCharPosition(
-      char inputChar); // get integer position given single character
-  int getPosition() const { return position; } // get integer position
+    int getMagnetPosition() const { return magnetPosition; } // position where magnet is detected
+    int getCharPosition(char inputChar); // get integer position given single character
+    int getPosition() const { return position; } // get integer position
 
-  bool readHallEffectSensor(); // return the value read by the hall effect
-                               // sensor
-  void magnetDetected() {
-    position = magnetPosition;
-  } // update position to magnetposition, called when magnet is detected
+    bool readHallEffectSensor(); // return the value read by the hall effect
+    // sensor
+    void magnetDetected() {
+        position = magnetPosition;
+    } // update position to magnetposition, called when magnet is detected
 
-  bool getHasErrored() const { return hasErrored; }
+    bool getHasErrored() const { return hasErrored; }
 
-private:
-  uint8_t address; // i2c address of module
-  int position;    // character drum position
-  int stepNumber;  // current position in the stepping order, to make motor move
-  int stepsPerRot; // number of steps per rotation
-  bool hasErrored = false; // flag to indicate if an error has occurred
+  private:
+    uint8_t address; // i2c address of module
+    int position; // character drum position
+    int stepNumber; // current position in the stepping order, to make motor move
+    int stepsPerRot; // number of steps per rotation
+    bool hasErrored = false; // flag to indicate if an error has occurred
 
-  void writeIO(uint16_t data); // write to motor in pins
+    void writeIO(uint16_t data); // write to motor in pins
 
-  int magnetPosition;             // altered by offsets
-  static const int motorPins[];   // Array of motor pins
-  static const int HallEffectPIN; // Hall Effect Sensor Pin (On PCF8575)
+    int magnetPosition; // altered by offsets
+    static const int motorPins[]; // Array of motor pins
+    static const int HallEffectPIN; // Hall Effect Sensor Pin (On PCF8575)
 
-  static const char chars[37];  // all characters in order
-  static int charPositions[37]; // will be generated based on the characters and
-                                // the magnetPosition variable
-  static const int numChars;    // number of characters in module
+    static const char chars[37]; // all characters in order
+    static int charPositions[37]; // will be generated based on the characters and
+    // the magnetPosition variable
+    static const int numChars; // number of characters in module
 };
 
 #endif

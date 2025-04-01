@@ -1,5 +1,6 @@
 #include "JsonSettings.h"
-#include "ArduinoJson.h"
+
+#include <ArduinoJson.h>
 #include <sstream>
 
 String JsonSettings::getString(const char *key) {
@@ -82,16 +83,14 @@ JsonDocument JsonSettings::toJson() {
         const JsonSetting &setting = pair.second;
 
         switch (setting.type) {
-        case JsonSettingType::JST_STR:
-        case JsonSettingType::JST_INT_VECTOR:
-            settings[key] = preferences.getString(key.c_str(), setting.strDefault);
-            break;
-        case JsonSettingType::JST_INT:
-            settings[key] = preferences.getInt(key.c_str(), setting.intDefault);
-            break;
-        case JsonSettingType::JST_FLOAT:
-            settings[key] = preferences.getFloat(key.c_str(), setting.floatDefault);
-            break;
+            case JsonSettingType::JST_STR:
+            case JsonSettingType::JST_INT_VECTOR:
+                settings[key] = preferences.getString(key.c_str(), setting.strDefault);
+                break;
+            case JsonSettingType::JST_INT: settings[key] = preferences.getInt(key.c_str(), setting.intDefault); break;
+            case JsonSettingType::JST_FLOAT:
+                settings[key] = preferences.getFloat(key.c_str(), setting.floatDefault);
+                break;
         }
     }
 
@@ -106,26 +105,26 @@ bool JsonSettings::fromJson(JsonDocument settings) {
         const char *key = kv.key().c_str();
         JsonSetting setting = this->find(key);
 
-        if (!setting.validate(kv.value().as<String>())) {
+        if (! setting.validate(kv.value().as<String>())) {
             lastValidationError = setting.getLastValidationError();
             lastValidationKey = String(key);
             return false;
         }
 
         switch (setting.type) {
-        case JsonSettingType::JST_INT_VECTOR:
-        case JsonSettingType::JST_STR:
-            Serial.println("Setting key: " + String(key) + " to value: " + kv.value().as<String>());
-            preferences.putString(key, kv.value().as<String>());
-            break;
-        case JsonSettingType::JST_INT:
-            Serial.println("Setting key: " + String(key) + " to value: " + String(kv.value().as<int>()));
-            preferences.putInt(key, kv.value().as<int>());
-            break;
-        case JsonSettingType::JST_FLOAT:
-            Serial.println("Setting key: " + String(key) + " to value: " + String(kv.value().as<float>()));
-            preferences.putFloat(key, kv.value().as<float>());
-            break;
+            case JsonSettingType::JST_INT_VECTOR:
+            case JsonSettingType::JST_STR:
+                Serial.println("Setting key: " + String(key) + " to value: " + kv.value().as<String>());
+                preferences.putString(key, kv.value().as<String>());
+                break;
+            case JsonSettingType::JST_INT:
+                Serial.println("Setting key: " + String(key) + " to value: " + String(kv.value().as<int>()));
+                preferences.putInt(key, kv.value().as<int>());
+                break;
+            case JsonSettingType::JST_FLOAT:
+                Serial.println("Setting key: " + String(key) + " to value: " + String(kv.value().as<float>()));
+                preferences.putFloat(key, kv.value().as<float>());
+                break;
         }
     }
 

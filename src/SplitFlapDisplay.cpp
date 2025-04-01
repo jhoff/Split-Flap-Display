@@ -1,4 +1,5 @@
 #include "SplitFlapDisplay.h"
+
 #include "JsonSettings.h"
 #include "SplitFlapModule.h"
 #include "SplitFlapMqtt.h"
@@ -14,7 +15,7 @@ void SplitFlapDisplay::init() {
 
     std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
     for (int i = 0; i < numModules; i++) {
-        moduleAddresses[i] = (uint8_t)settingAddresses[i];
+        moduleAddresses[i] = (uint8_t) settingAddresses[i];
     }
 
     std::vector<int> settingOffsets = settings.getIntVector("moduleOffsets");
@@ -46,7 +47,7 @@ void SplitFlapDisplay::init() {
 
 void SplitFlapDisplay::testAll() {
     char testChars[37] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     int numChars = sizeof(testChars) / sizeof(testChars[0]);
     int targetPositions[numModules];
 
@@ -69,7 +70,7 @@ void SplitFlapDisplay::testAll() {
 
 void SplitFlapDisplay::testRandom(float speed) {
     char testChars[37] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     int targetPositions[numModules];
     char randChar;
@@ -85,7 +86,6 @@ void SplitFlapDisplay::testRandom(float speed) {
 }
 
 void SplitFlapDisplay::testCount() {
-
     int count = 0;
     int maxCount = pow(10, numModules);
     char targetChar;
@@ -96,7 +96,7 @@ void SplitFlapDisplay::testCount() {
     for (int i = 0; i < maxCount; i++) {
         // get each character in the count integer
         for (int j = 0; j < numModules; j++) {
-            targetInteger = (i % (int)pow(10, j + 1)) / (int)pow(10, j);
+            targetInteger = (i % (int) pow(10, j + 1)) / (int) pow(10, j);
             targetChar = targetInteger + '0'; // convert to char
             targetPositions[numModules - j - 1] = modules[j].getCharPosition(targetChar);
         }
@@ -149,7 +149,6 @@ void SplitFlapDisplay::homeToChar(char homeChar, float speed) {
 }
 
 void SplitFlapDisplay::writeChar(char inputChar, float speed) {
-
     int targetPositions[numModules];
     // Iterate through the input string and process each character
     for (int i = 0; i < numModules; i++) {
@@ -159,7 +158,6 @@ void SplitFlapDisplay::writeChar(char inputChar, float speed) {
 }
 
 void SplitFlapDisplay::writeString(String inputString, float speed, bool centering) {
-
     String displayString = inputString.substring(0, numModules);
 
     if (centering) {
@@ -181,9 +179,9 @@ void SplitFlapDisplay::writeString(String inputString, float speed, bool centeri
             result += " ";
         }
         displayString = result;
-    } else { // pad blanks to end, if no centering
+    } else {                                          // pad blanks to end, if no centering
         while (displayString.length() < numModules) { // Pad with spaces
-            displayString += " "; // Padding with space
+            displayString += " ";                     // Padding with space
         }
     }
 
@@ -202,7 +200,6 @@ void SplitFlapDisplay::writeString(String inputString, float speed, bool centeri
 }
 
 void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMotors) {
-
     // TODO check length of array and return if empty
 
     speed = constrain(speed, 2, maxVel);
@@ -218,13 +215,16 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
 
     bool resetLatches[numModules] = {}; // Initialize to false //start with latch on to prevent case where the
     // motion starts with the magnet over the sensor
-    bool needsStepping[numModules] = {}; // Initialize to false; //modules that still require moving
-    unsigned long lastStepTimes[numModules] = {}; // Initialize to false; //track when each module was last stepped
+    bool needsStepping[numModules] = {};             // Initialize to false; //modules that still require moving
+    unsigned long lastStepTimes[numModules] = {};    // Initialize to false; //track when each module was last stepped
     unsigned long lastSensorCheckTime = currentTime; // track when we last read all the hall effect sensors
 
     for (int i = 0; i < numModules; i++) {
-        targetPositions[i] = constrain(targetPositions[i], 0,
-            stepsPerRot - 1); // Constrain to avoid errors with incorrect inputs
+        targetPositions[i] = constrain(
+            targetPositions[i],
+            0,
+            stepsPerRot - 1
+        ); // Constrain to avoid errors with incorrect inputs
         resetLatches[i] = true;
         lastStepTimes[i] = currentTime;
         if (modules[i].getPosition() != targetPositions[i]) {
@@ -239,8 +239,7 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
     delay(startStopDelay); // give the motor time to align to magnetic field
 
     bool isFinished = checkAllFalse(needsStepping, numModules);
-    while (!isFinished) {
-
+    while (! isFinished) {
         currentTime = micros();
         for (int i = 0; i < numModules; i++) {
             if (((currentTime - lastStepTimes[i]) > timePerStep) && needsStepping[i]) {
@@ -257,9 +256,9 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
             // check every modules sensor
             for (int i = 0; i < numModules; i++) {
                 if (needsStepping[i] &&
-                    (modules[i].readHallEffectSensor() ==
-                        true)) { // only check sensors where the module is still moving
-                    if (!resetLatches[i]) {
+                    (modules[i].readHallEffectSensor() == true
+                    )) { // only check sensors where the module is still moving
+                    if (! resetLatches[i]) {
                         // UNCOMMENTING THIS WILL PROBBALY MAKE THE MOTORS INACCURATE, DUE
                         // TO TIME TAKEN TO PRINT
                         //  Serial.print("Module: ");
@@ -293,10 +292,10 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
 bool SplitFlapDisplay::checkAllFalse(bool array[], int size) {
     for (int i = 0; i < size; i++) {
         if (array[i] == true) {
-            return false; // As soon as a true value is found, return false
+            return false;              // As soon as a true value is found, return false
         }
     }
-    return true; // All values were false
+    return true;                       // All values were false
 }
 
 void SplitFlapDisplay::startMotors() { // Probably broken somewhere, not sure
@@ -313,4 +312,6 @@ void SplitFlapDisplay::stopMotors() {
     }
 }
 
-void SplitFlapDisplay::setMqtt(SplitFlapMqtt *mqttHandler) { mqtt = mqttHandler; }
+void SplitFlapDisplay::setMqtt(SplitFlapMqtt *mqttHandler) {
+    mqtt = mqttHandler;
+}

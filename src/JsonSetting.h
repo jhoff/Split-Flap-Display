@@ -1,11 +1,15 @@
-#ifndef JsonSetting_h
-#define JsonSetting_h
+#pragma once
 
-#include "JsonSetting.h"
 #include <Preferences.h>
 #include <vector>
 
-typedef enum { JST_STR, JST_INT, JST_FLOAT, JST_INT_VECTOR } JsonSettingType;
+typedef enum
+{
+    JST_STR,
+    JST_INT,
+    JST_FLOAT,
+    JST_INT_VECTOR
+} JsonSettingType;
 
 class JsonSetting {
   public:
@@ -20,7 +24,9 @@ class JsonSetting {
     }
 
     bool validate(String str);
-    String getLastValidationError() { return lastValidationError; }
+    String getLastValidationError() {
+        return lastValidationError;
+    }
 
   private:
     JsonSettingType type;
@@ -37,5 +43,3 @@ class JsonSetting {
 
     friend class JsonSettings;
 };
-
-#endif

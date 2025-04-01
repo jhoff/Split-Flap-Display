@@ -1,8 +1,8 @@
-#ifndef JsonSettings_h
-#define JsonSettings_h
+#pragma once
 
-#include "Arduino.h"
 #include "JsonSetting.h"
+
+#include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
 #include <map>
@@ -25,8 +25,12 @@ class JsonSettings {
     bool fromJson(JsonDocument settings);
     bool reset();
 
-    String getLastValidationError() { return lastValidationError; }
-    String getLastValidationKey() { return lastValidationKey; }
+    String getLastValidationError() {
+        return lastValidationError;
+    }
+    String getLastValidationKey() {
+        return lastValidationKey;
+    }
 
   private:
     const char *name;
@@ -39,5 +43,3 @@ class JsonSettings {
 
     Preferences preferences;
 };
-
-#endif

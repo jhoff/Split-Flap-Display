@@ -13,10 +13,8 @@ String JsonSetting::intVectorToString(const std::vector<int> &vec) {
 
 bool JsonSetting::validate(String str) {
     switch (type) {
-    case JsonSettingType::JST_INT_VECTOR:
-        return validateIntVector(str);
-    default:
-        return true;
+        case JsonSettingType::JST_INT_VECTOR: return validateIntVector(str);
+        default: return true;
     }
 }
 

@@ -1,6 +1,7 @@
 #include "SplitFlapWebServer.h"
-#include "ArduinoJson.h"
-#include "AsyncJson.h"
+
+#include <ArduinoJson.h>
+#include <AsyncJson.h>
 
 #define AP_SSID "Split Flap Display"
 
@@ -12,7 +13,6 @@
 #define WIFI_PASS ""
 #endif
 
-// Constructor
 SplitFlapWebServer::SplitFlapWebServer(JsonSettings &settings)
     : settings(settings), server(80), multiWordDelay(1000), attemptReconnect(false), multiWordCurrentIndex(0),
       numMultiWords(0), wifiCheckInterval(1000), connectionMode(0), checkDateInterval(250), centering(1) {
@@ -20,7 +20,7 @@ SplitFlapWebServer::SplitFlapWebServer(JsonSettings &settings)
 }
 
 void SplitFlapWebServer::init() {
-    if (!LittleFS.begin()) {
+    if (! LittleFS.begin()) {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
@@ -35,7 +35,7 @@ void SplitFlapWebServer::setTimezone() {
     String posixTimezone = defaultTz;
 
     File file = LittleFS.open("/timezones.json", "r");
-    if (!file) {
+    if (! file) {
         Serial.println("Failed to open timezones.json; defaulting to UTC");
         configTzTime(defaultTz, sntpServer);
         return;
@@ -73,10 +73,10 @@ void SplitFlapWebServer::setTimezone() {
 //  Function to get current minute as a string
 String SplitFlapWebServer::getCurrentMinute() {
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (! getLocalTime(&timeinfo)) {
         return "";
     }
-    char minuteStr[3]; // Max "59" + null terminator
+    char minuteStr[3];                           // Max "59" + null terminator
     sprintf(minuteStr, "%02d", timeinfo.tm_min); // Format as two-digit string
     return String(minuteStr);
 }
@@ -84,10 +84,10 @@ String SplitFlapWebServer::getCurrentMinute() {
 // Function to get current hour as a string
 String SplitFlapWebServer::getCurrentHour() {
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (! getLocalTime(&timeinfo)) {
         return "";
     }
-    char hourStr[3]; // Max "59" + null terminator
+    char hourStr[3];                            // Max "59" + null terminator
     sprintf(hourStr, "%02d", timeinfo.tm_hour); // Format as two-digit string
     return String(hourStr);
 }
@@ -95,7 +95,7 @@ String SplitFlapWebServer::getCurrentHour() {
 // Function to get the first n characters of the day
 String SplitFlapWebServer::getDayPrefix(int n) {
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (! getLocalTime(&timeinfo)) {
         return "Err"; // Return error if time not available
     }
 
@@ -114,7 +114,7 @@ String SplitFlapWebServer::getDayPrefix(int n) {
 // Function to get the first n characters of the month
 String SplitFlapWebServer::getMonthPrefix(int n) {
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (! getLocalTime(&timeinfo)) {
         return "Err"; // Return error if time not available
     }
 
@@ -132,19 +132,23 @@ String SplitFlapWebServer::getMonthPrefix(int n) {
 
 String SplitFlapWebServer::getCurrentDay() {
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        return "Err"; // Return error if time is not available
+    if (! getLocalTime(&timeinfo)) {
+        return "Err";                          // Return error if time is not available
     }
 
-    char dayStr[3]; // Buffer for the day number (max "31" + null terminator)
+    char dayStr[3];                            // Buffer for the day number (max "31" + null terminator)
     sprintf(dayStr, "%02d", timeinfo.tm_mday); // Format as two-digit string
 
     return String(dayStr);
 }
 
-void SplitFlapWebServer::setMode(int targetMode) { settings.putInt("mode", targetMode); }
+void SplitFlapWebServer::setMode(int targetMode) {
+    settings.putInt("mode", targetMode);
+}
 
-int SplitFlapWebServer::getMode() { return settings.getInt("mode"); }
+int SplitFlapWebServer::getMode() {
+    return settings.getInt("mode");
+}
 
 void SplitFlapWebServer::checkWiFi() {
     if (connectionMode == 1) {
@@ -168,17 +172,16 @@ bool SplitFlapWebServer::loadWiFiCredentials() {
         WiFi.mode(WIFI_STA);
 #ifdef WIFI_TX_POWER
         delay(100);
-        WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
+        WiFi.setTxPower((wifi_power_t) WIFI_TX_POWER);
 #endif
         WiFi.begin(ssid.c_str(), password.c_str());
         return true; // Return true if credentials exist
     }
-    return false; // Return false if no credentials were found
+    return false;    // Return false if no credentials were found
 }
 
 bool SplitFlapWebServer::connectToWifi() {
     if (loadWiFiCredentials()) {
-
         unsigned long startAttemptTime = millis();
         const unsigned long timeout = 20000; // 20 seconds
         unsigned long lastPrintTime = startAttemptTime;
@@ -216,7 +219,7 @@ void SplitFlapWebServer::startAccessPoint() {
     WiFi.softAP(apSSID);
 #ifdef WIFI_TX_POWER
     delay(100);
-    WiFi.setTxPower((wifi_power_t)WIFI_TX_POWER);
+    WiFi.setTxPower((wifi_power_t) WIFI_TX_POWER);
 #endif
     Serial.println("AP Mode Started!");
     Serial.println("Connect to: " + String(apSSID));
@@ -235,7 +238,7 @@ void SplitFlapWebServer::endMDNS() {
 }
 
 void SplitFlapWebServer::startMDNS() {
-    if (!MDNS.begin(settings.getString("mdns").c_str())) {
+    if (! MDNS.begin(settings.getString("mdns").c_str())) {
         Serial.println("Error setting up MDNS responder!");
         while (1) {
             delay(1000);
@@ -249,7 +252,7 @@ void SplitFlapWebServer::startWebServer() {
     server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) { request->redirect("/index.html"); });
 
     File root = LittleFS.open("/");
-    if (!root || !root.isDirectory()) {
+    if (! root || ! root.isDirectory()) {
         Serial.println("Failed to open directory or not a directory");
         return;
     }
@@ -283,132 +286,133 @@ void SplitFlapWebServer::startWebServer() {
         this->attemptReconnect = true;
     });
 
-    server.addHandler(
-        new AsyncCallbackJsonWebHandler("/settings", [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            if (request->method() != HTTP_POST) {
-                return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
+    server.addHandler(new AsyncCallbackJsonWebHandler(
+        "/settings",
+        [this](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (request->method() != HTTP_POST) {
+            return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
+        }
+
+        Serial.println("Received settings update request");
+        Serial.println(json.as<String>());
+
+        bool reconnect = false;
+        JsonDocument response;
+        response["message"] = "Settings saved successfully!";
+
+        // TODO Refactor this it's gross
+        if ((json["ssid"].is<String>() && json["ssid"].as<String>() != settings.getString("ssid")) ||
+            (json["password"].is<String>() && json["password"].as<String>() != settings.getString("password"))) {
+            reconnect = true;
+            response["message"] = "Settings updated successfully, Network " "settings have changed, reconnect to the " +
+                json["ssid"].as<String>() + " network";
+        }
+
+        if (json["mdns"].is<String>() && json["mdns"].as<String>() != settings.getString("mdns")) {
+            reconnect = true;
+            response["message"] =
+                "Settings updated successfully, mDNS name has changed, " "automatically redirecting to http://" +
+                json["mdns"].as<String>() + ".local...";
+            response["redirect"] = "http://" + json["mdns"].as<String>() + ".local/settings.html";
+        }
+
+        if ((json["mqtt_server"].is<String>() && json["mqtt_server"].as<String>() != settings.getString("mqtt_server")
+            ) ||
+            (json["mqtt_port"].is<int>() && json["mqtt_port"].as<int>() != settings.getInt("mqtt_port")) ||
+            (json["mqtt_user"].is<String>() && json["mqtt_user"].as<String>() != settings.getString("mqtt_user")) ||
+            (json["mqtt_pass"].is<String>() && json["mqtt_pass"].as<String>() != settings.getString("mqtt_pass"))) {
+            response["message"] = "Mqtt settings have changed, reconnecting...";
+            reconnect = true;
+        }
+
+        if (! settings.fromJson(json)) {
+            response["message"] = "Failed to save settings";
+            response["type"] = "error";
+            response["errors"]["key"] = settings.getLastValidationKey();
+            response["errors"]["message"] = settings.getLastValidationError();
+            return request->send(400, "application/json", response.as<String>());
+        }
+
+        response["type"] = "success";
+        response["persistent"] = reconnect;
+
+        request->send(200, "application/json", response.as<String>());
+
+        this->attemptReconnect = reconnect;
+    }
+    ));
+
+    server
+        .addHandler(new AsyncCallbackJsonWebHandler("/text", [this](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (request->method() != HTTP_POST) {
+            return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
+        }
+
+        Serial.println("Received text update request");
+        Serial.println(json.as<String>());
+
+        // {"mode":"single","words":["adfasdf"],"delay":1,"center":false}
+        // {"mode":"multiple","words":["asdf","asdfasdf","fffff"],"delay":"14","center":true}
+        JsonDocument response;
+
+        if (! json["mode"].is<String>()) {
+            response["message"] = "Invalid mode type";
+        }
+
+        if (! json["words"].is<JsonArray>()) {
+            response["message"] = "Invalid words array";
+        }
+
+        float delay = json["delay"].as<float>();
+        if (delay < 1) {
+            response["message"] = "Invalid delay type / value";
+        }
+
+        if (! json["center"].is<bool>()) {
+            response["message"] = "Invalid center type";
+        }
+
+        if (response["message"].is<String>()) {
+            response["type"] = "error";
+            return request->send(400, "application/json", response.as<String>());
+        }
+
+        this->setMultiDelay(delay * 1000);
+        Serial.println("Delay: " + String(this->getMultiWordDelay()));
+
+        centering = json["center"].as<bool>() ? 1 : 0;
+        Serial.println("centering: " + String(centering ? "true" : "false"));
+
+        if (json["mode"] == "single") {
+            String word = decodeURIComponent(json["words"][0].as<String>());
+            Serial.println("Single Word: " + word);
+            this->setInputString(word);
+            this->setMode(0); // change mode last once all variables updated
+        }
+
+        if (json["mode"] == "multiple") {
+            JsonArray wordsArray = json["words"].as<JsonArray>();
+            String words = "";
+            for (JsonVariant v : wordsArray) {
+                words += decodeURIComponent(v.as<String>()) + ",";
+            }
+            if (words.length() > 0) {
+                words.remove(words.length() - 1);
             }
 
-            Serial.println("Received settings update request");
-            Serial.println(json.as<String>());
+            this->setMultiInputString(words);
+            this->numMultiWords = wordsArray.size();
+            Serial.println("Multiple Words: " + words);
+            Serial.println("Number of Words: " + String(this->numMultiWords));
 
-            bool reconnect = false;
-            JsonDocument response;
-            response["message"] = "Settings saved successfully!";
+            this->setMode(1);
+        }
 
-            // TODO Refactor this it's gross
-            if ((json["ssid"].is<String>() && json["ssid"].as<String>() != settings.getString("ssid")) ||
-                (json["password"].is<String>() && json["password"].as<String>() != settings.getString("password"))) {
-                reconnect = true;
-                response["message"] =
-                    "Settings updated successfully, Network " "settings have changed, reconnect to the " +
-                    json["ssid"].as<String>() + " network";
-            }
+        response["message"] = "Text updated successfully!";
+        response["type"] = "success";
 
-            if (json["mdns"].is<String>() && json["mdns"].as<String>() != settings.getString("mdns")) {
-                reconnect = true;
-                response["message"] =
-                    "Settings updated successfully, mDNS name has changed, " "automatically redirecting to http://" +
-                    json["mdns"].as<String>() + ".local...";
-                response["redirect"] = "http://" + json["mdns"].as<String>() + ".local/settings.html";
-            }
-
-            if ((json["mqtt_server"].is<String>() &&
-                    json["mqtt_server"].as<String>() != settings.getString("mqtt_server")) ||
-                (json["mqtt_port"].is<int>() && json["mqtt_port"].as<int>() != settings.getInt("mqtt_port")) ||
-                (json["mqtt_user"].is<String>() && json["mqtt_user"].as<String>() != settings.getString("mqtt_user")) ||
-                (json["mqtt_pass"].is<String>() && json["mqtt_pass"].as<String>() != settings.getString("mqtt_pass"))) {
-                response["message"] = "Mqtt settings have changed, reconnecting...";
-                reconnect = true;
-            }
-
-            if (!settings.fromJson(json)) {
-                response["message"] = "Failed to save settings";
-                response["type"] = "error";
-                response["errors"]["key"] = settings.getLastValidationKey();
-                response["errors"]["message"] = settings.getLastValidationError();
-                return request->send(400, "application/json", response.as<String>());
-            }
-
-            response["type"] = "success";
-            response["persistent"] = reconnect;
-
-            request->send(200, "application/json", response.as<String>());
-
-            this->attemptReconnect = reconnect;
-        }));
-
-    server.addHandler(
-        new AsyncCallbackJsonWebHandler("/text", [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            if (request->method() != HTTP_POST) {
-                return request->send(405, "application/json", "{\"error\":\"Method Not Allowed\"}");
-            }
-
-            Serial.println("Received text update request");
-            Serial.println(json.as<String>());
-
-            // {"mode":"single","words":["adfasdf"],"delay":1,"center":false}
-            // {"mode":"multiple","words":["asdf","asdfasdf","fffff"],"delay":"14","center":true}
-            JsonDocument response;
-
-            if (!json["mode"].is<String>()) {
-                response["message"] = "Invalid mode type";
-            }
-
-            if (!json["words"].is<JsonArray>()) {
-                response["message"] = "Invalid words array";
-            }
-
-            float delay = json["delay"].as<float>();
-            if (delay < 1) {
-                response["message"] = "Invalid delay type / value";
-            }
-
-            if (!json["center"].is<bool>()) {
-                response["message"] = "Invalid center type";
-            }
-
-            if (response["message"].is<String>()) {
-                response["type"] = "error";
-                return request->send(400, "application/json", response.as<String>());
-            }
-
-            this->setMultiDelay(delay * 1000);
-            Serial.println("Delay: " + String(this->getMultiWordDelay()));
-
-            centering = json["center"].as<bool>() ? 1 : 0;
-            Serial.println("centering: " + String(centering ? "true" : "false"));
-
-            if (json["mode"] == "single") {
-                String word = decodeURIComponent(json["words"][0].as<String>());
-                Serial.println("Single Word: " + word);
-                this->setInputString(word);
-                this->setMode(0); // change mode last once all variables updated
-            }
-
-            if (json["mode"] == "multiple") {
-                JsonArray wordsArray = json["words"].as<JsonArray>();
-                String words = "";
-                for (JsonVariant v : wordsArray) {
-                    words += decodeURIComponent(v.as<String>()) + ",";
-                }
-                if (words.length() > 0) {
-                    words.remove(words.length() - 1);
-                }
-
-                this->setMultiInputString(words);
-                this->numMultiWords = wordsArray.size();
-                Serial.println("Multiple Words: " + words);
-                Serial.println("Number of Words: " + String(this->numMultiWords));
-
-                this->setMode(1);
-            }
-
-            response["message"] = "Text updated successfully!";
-            response["type"] = "success";
-
-            request->send(200, "application/json", response.as<String>());
-        }));
+        request->send(200, "application/json", response.as<String>());
+    }));
 
     server.onNotFound(fourOhFour);
 
@@ -418,39 +422,39 @@ void SplitFlapWebServer::startWebServer() {
 String SplitFlapWebServer::decodeURIComponent(String encodedString) {
     String decodedString = encodedString;
     // Replace common URL-encoded characters with their actual symbols
-    decodedString.replace("%20", " "); // space
-    decodedString.replace("%21", "!"); // exclamation mark
+    decodedString.replace("%20", " ");  // space
+    decodedString.replace("%21", "!");  // exclamation mark
     decodedString.replace("%22", "\""); // double quote
-    decodedString.replace("%23", "#"); // hash
-    decodedString.replace("%24", "$"); // dollar sign
-    decodedString.replace("%25", "%"); // percent
-    decodedString.replace("%26", "&"); // ampersand
-    decodedString.replace("%27", "'"); // single quote
-    decodedString.replace("%28", "("); // left parenthesis
-    decodedString.replace("%29", ")"); // right parenthesis
-    decodedString.replace("%2A", "*"); // asterisk
-    decodedString.replace("%2B", "+"); // plus
-    decodedString.replace("%2C", ","); // comma
-    decodedString.replace("%2D", "-"); // hyphen
-    decodedString.replace("%2E", "."); // period
-    decodedString.replace("%2F", "/"); // forward slash
-    decodedString.replace("%3A", ":"); // colon
-    decodedString.replace("%3B", ";"); // semicolon
-    decodedString.replace("%3C", "<"); // less than
-    decodedString.replace("%3D", "="); // equal sign
-    decodedString.replace("%3E", ">"); // greater than
-    decodedString.replace("%3F", "?"); // question mark
-    decodedString.replace("%40", "@"); // at symbol
-    decodedString.replace("%5B", "["); // left bracket
+    decodedString.replace("%23", "#");  // hash
+    decodedString.replace("%24", "$");  // dollar sign
+    decodedString.replace("%25", "%");  // percent
+    decodedString.replace("%26", "&");  // ampersand
+    decodedString.replace("%27", "'");  // single quote
+    decodedString.replace("%28", "(");  // left parenthesis
+    decodedString.replace("%29", ")");  // right parenthesis
+    decodedString.replace("%2A", "*");  // asterisk
+    decodedString.replace("%2B", "+");  // plus
+    decodedString.replace("%2C", ",");  // comma
+    decodedString.replace("%2D", "-");  // hyphen
+    decodedString.replace("%2E", ".");  // period
+    decodedString.replace("%2F", "/");  // forward slash
+    decodedString.replace("%3A", ":");  // colon
+    decodedString.replace("%3B", ";");  // semicolon
+    decodedString.replace("%3C", "<");  // less than
+    decodedString.replace("%3D", "=");  // equal sign
+    decodedString.replace("%3E", ">");  // greater than
+    decodedString.replace("%3F", "?");  // question mark
+    decodedString.replace("%40", "@");  // at symbol
+    decodedString.replace("%5B", "[");  // left bracket
     decodedString.replace("%5C", "\\"); // backslash
-    decodedString.replace("%5D", "]"); // right bracket
-    decodedString.replace("%5E", "^"); // caret
-    decodedString.replace("%5F", "_"); // underscore
-    decodedString.replace("%60", "`"); // grave accent
-    decodedString.replace("%7B", "{"); // left brace
-    decodedString.replace("%7C", "|"); // vertical bar
-    decodedString.replace("%7D", "}"); // right brace
-    decodedString.replace("%7E", "~"); // tilde
+    decodedString.replace("%5D", "]");  // right bracket
+    decodedString.replace("%5E", "^");  // caret
+    decodedString.replace("%5F", "_");  // underscore
+    decodedString.replace("%60", "`");  // grave accent
+    decodedString.replace("%7B", "{");  // left brace
+    decodedString.replace("%7C", "|");  // vertical bar
+    decodedString.replace("%7D", "}");  // right brace
+    decodedString.replace("%7E", "~");  // tilde
 
     // Handle percent-encoded values for characters beyond basic ASCII (e.g.,
     // extended Unicode)

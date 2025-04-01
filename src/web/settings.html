@@ -68,6 +68,22 @@
                 x-text="errors.message"
             ></div>
 
+            <label for="otaPass" class="block text-left text-lg mt-4"
+                >OTA Password (will restart)</label
+            >
+            <input
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
+                type="text"
+                x-model="settings.otaPass"
+                placeholder="Enter OTA Password"
+            />
+            <div
+                class="w-full p-3 mt-2 text-sm text-white bg-red-500 rounded-md"
+                x-cloak
+                x-show="errors.key === 'otaPass'"
+                x-text="errors.message"
+            ></div>
+
             <label for="timezone" class="block text-left text-lg mt-4"
                 >Timezone</label
             >

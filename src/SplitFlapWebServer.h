@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <ArduinoOTA.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
 #include <LittleFS.h>
@@ -15,6 +16,7 @@ class SplitFlapWebServer {
     SplitFlapWebServer(JsonSettings &settings);
     void init();
     void setTimezone();
+    void checkRebootRequired();
 
     // Wifi Connectivity
     bool loadWiFiCredentials();
@@ -24,6 +26,8 @@ class SplitFlapWebServer {
     void startWebServer();
     void endMDNS();
     void startMDNS();
+    void enableOta();
+    void handleOta();
     void startAccessPoint();
     void checkWiFi();
     unsigned long getLastCheckWifiTime() { return lastCheckWifiTime; }
@@ -85,6 +89,7 @@ class SplitFlapWebServer {
     String inputString;      // latest single input from user
     String writtenString;    // string for whatever is currently written to the display
 
+    bool rebootRequired;
     bool attemptReconnect;
     unsigned long lastCheckWifiTime;
     int wifiCheckInterval;

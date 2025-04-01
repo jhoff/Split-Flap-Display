@@ -20,8 +20,8 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install Prettier
-        run: npm install -g prettier
+      - name: Install packages
+        run: npm install
 
       - name: Install Clang Format
         uses: jidicula/clang-format-action@v4.15.0
@@ -30,4 +30,4 @@ jobs:
             check-path: 'src'
 
       - name: Run Prettier
-        run: prettier --check "**/*.{js,ts,json,md,yaml}"
+        run: prettier --check 'src/**/*.{js,json,css,html}' platformio.ini package.json readme.md vite.config.mjs tailwind.config.js

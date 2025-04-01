@@ -31,14 +31,16 @@ void SplitFlapWebServer::init() {
 }
 
 void SplitFlapWebServer::setTimezone() {
-  const char *timezoneSetting = settings.getString("timezone").c_str();
   const char *sntpServer = "pool.ntp.org";
-  const char *posixTimezone = "UTC0";
+  const char *defaultTz = "UTC0";
+  String timezoneSetting = settings.getString("timezone");
+  String posixTimezone = defaultTz;
 
   File file = LittleFS.open("/timezones.json", "r");
   if (!file) {
     Serial.println("Failed to open timezones.json; defaulting to UTC");
-    return configTzTime(posixTimezone, sntpServer);
+    configTzTime(defaultTz, sntpServer);
+    return;
   }
 
   size_t size = file.size();
@@ -47,16 +49,26 @@ void SplitFlapWebServer::setTimezone() {
   file.close();
 
   JsonDocument timezones;
-  deserializeJson(timezones, buffer.get());
+  DeserializationError error = deserializeJson(timezones, buffer.get());
+
+  if (error) {
+    Serial.println("Failed to parse timezones.json: " + String(error.c_str()));
+    configTzTime(defaultTz, sntpServer);
+    return;
+  }
 
   for (JsonPair kv : timezones.as<JsonObject>()) {
-    if (kv.key().c_str() == timezoneSetting) {
-      posixTimezone = kv.value().as<String>().c_str();
+    String keyStr = kv.key().c_str();
+    String valueStr = kv.value().as<String>();
+
+    if (keyStr == timezoneSetting) {
+      posixTimezone = valueStr;
       break;
     }
   }
 
-  configTzTime(posixTimezone, sntpServer);
+  Serial.println("POSIX Timezone set to: " + posixTimezone);
+  configTzTime(posixTimezone.c_str(), sntpServer);
 }
 
 // Totally didn't use AI to make these functions
@@ -315,6 +327,18 @@ void SplitFlapWebServer::startWebServer() {
               json["mdns"].as<String>() + ".local...";
           response["redirect"] =
               "http://" + json["mdns"].as<String>() + ".local/settings.html";
+        }
+
+        if ((json["mqtt_server"].is<String>() &&
+             json["mqtt_server"].as<String>() != settings.getString("mqtt_server")) ||
+            (json["mqtt_port"].is<int>() &&
+             json["mqtt_port"].as<int>() != settings.getInt("mqtt_port")) ||
+            (json["mqtt_user"].is<String>() &&
+             json["mqtt_user"].as<String>() != settings.getString("mqtt_user")) ||
+            (json["mqtt_pass"].is<String>() &&
+             json["mqtt_pass"].as<String>() != settings.getString("mqtt_pass"))) {
+          response["message"] = "Mqtt settings have changed, reconnecting...";
+          reconnect = true;
         }
 
         if (!settings.fromJson(json)) {

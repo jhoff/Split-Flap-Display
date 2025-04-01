@@ -18,8 +18,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
 
-      - name: Install packages
-        run: npm install
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Install Clang Format
         uses: jidicula/clang-format-action@v4.15.0

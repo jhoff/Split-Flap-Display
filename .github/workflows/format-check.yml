@@ -23,12 +23,11 @@ jobs:
       - name: Install Prettier
         run: npm install -g prettier
 
-      - name: Install clang-format
-        run: sudo apt-get install -y clang-format
-
-      - name: Run clang-format
-        run: |
-          find . -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+      - name: Install Clang Format
+        uses: jidicula/clang-format-action@v4.15.0
+        with:
+            clang-format-version: '20'
+            check-path: 'src'
 
       - name: Run Prettier
         run: prettier --check "**/*.{js,ts,json,md,yaml}"

@@ -12,27 +12,21 @@ class SplitFlapModule {
 
     void init();
 
-    void step(bool updatePosition = true); // step motor
-    void stop();                           // write all motor input pins to low
-    void start();                          // re-energize coils to last position, not stepping motor
+    void step(bool updatePosition = true);                   // step motor
+    void stop();                                             // write all motor input pins to low
+    void start();                                            // re-energize coils to last position, not stepping motor
 
-    int getMagnetPosition() const {
-        return magnetPosition;
-    } // position where magnet is detected
-    int getCharPosition(char inputChar); // get integer position given single character
-    int getPosition() const {
-        return position;
-    } // get integer position
+    int getMagnetPosition() const { return magnetPosition; } // position where magnet is detected
+    int getCharPosition(char inputChar);                     // get integer position given single character
+    int getPosition() const { return position; }             // get integer position
 
-    bool readHallEffectSensor(); // return the value read by the hall effect
+    bool readHallEffectSensor();                             // return the value read by the hall effect
     // sensor
     void magnetDetected() {
         position = magnetPosition;
     } // update position to magnetposition, called when magnet is detected
 
-    bool getHasErrored() const {
-        return hasErrored;
-    }
+    bool getHasErrored() const { return hasErrored; }
 
   private:
     uint8_t address;                // i2c address of module

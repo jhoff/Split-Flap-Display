@@ -23,9 +23,7 @@ class JsonSetting {
     }
 
     bool validate(String str);
-    String getLastValidationError() {
-        return lastValidationError;
-    }
+    String getLastValidationError() { return lastValidationError; }
 
   private:
     JsonSettingType type;

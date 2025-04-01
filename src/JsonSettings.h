@@ -25,12 +25,8 @@ class JsonSettings {
     bool fromJson(JsonDocument settings);
     bool reset();
 
-    String getLastValidationError() {
-        return lastValidationError;
-    }
-    String getLastValidationKey() {
-        return lastValidationKey;
-    }
+    String getLastValidationError() { return lastValidationError; }
+    String getLastValidationKey() { return lastValidationKey; }
 
   private:
     const char *name;

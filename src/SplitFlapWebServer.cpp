@@ -396,13 +396,16 @@ void SplitFlapWebServer::startWebServer() {
         }
 
         if ((json["mqtt_server"].is<String>() &&
-             json["mqtt_server"].as<String>() != settings.getString("mqtt_server")) ||
+             json["mqtt_server"].as<String>() !=
+                 settings.getString("mqtt_server")) ||
             (json["mqtt_port"].is<int>() &&
              json["mqtt_port"].as<int>() != settings.getInt("mqtt_port")) ||
             (json["mqtt_user"].is<String>() &&
-             json["mqtt_user"].as<String>() != settings.getString("mqtt_user")) ||
+             json["mqtt_user"].as<String>() !=
+                 settings.getString("mqtt_user")) ||
             (json["mqtt_pass"].is<String>() &&
-             json["mqtt_pass"].as<String>() != settings.getString("mqtt_pass"))) {
+             json["mqtt_pass"].as<String>() !=
+                 settings.getString("mqtt_pass"))) {
           response["message"] = "Mqtt settings have changed, reconnecting...";
           reconnect = true;
         }

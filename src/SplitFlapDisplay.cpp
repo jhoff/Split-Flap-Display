@@ -210,7 +210,7 @@ void SplitFlapDisplay::writeString(String inputString, float speed,
   moveTo(targetPositions, speed);
 
   if (mqtt && mqtt->isConnected()) {
-      mqtt->publishState(displayString);
+    mqtt->publishState(displayString);
   }
 }
 
@@ -336,6 +336,6 @@ void SplitFlapDisplay::stopMotors() {
   }
 }
 
-void SplitFlapDisplay::setMqtt(SplitFlapMqtt* mqttHandler) {
+void SplitFlapDisplay::setMqtt(SplitFlapMqtt *mqttHandler) {
   mqtt = mqttHandler;
 }

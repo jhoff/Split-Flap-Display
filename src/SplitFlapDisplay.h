@@ -35,7 +35,7 @@ public:
   void testCount();
   void testRandom(float speed = MAX_RPM);
   int getNumModules() { return numModules; }
-  void setMqtt(SplitFlapMqtt* mqttHandler);
+  void setMqtt(SplitFlapMqtt *mqttHandler);
 
 private:
   JsonSettings &settings;
@@ -57,7 +57,7 @@ private:
   int SDAPin;         // SDA pin
   int SCLPin;         // SCL pin
 
-  SplitFlapMqtt* mqtt = nullptr;
+  SplitFlapMqtt *mqtt = nullptr;
 };
 
 #endif

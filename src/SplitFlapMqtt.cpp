@@ -1,28 +1,28 @@
 #include "SplitFlapMqtt.h"
 
-SplitFlapMqtt::SplitFlapMqtt(JsonSettings& settings, WiFiClient& wifiClient)
-  : settings(settings), wifiClient(wifiClient), mqttClient(wifiClient), display(nullptr) {}
+SplitFlapMqtt::SplitFlapMqtt(JsonSettings &settings, WiFiClient &wifiClient)
+    : settings(settings), wifiClient(wifiClient), mqttClient(wifiClient), display(nullptr) {}
 
 void SplitFlapMqtt::setup() {
     mqttServer = settings.getString("mqtt_server");
-    mqttPort   = settings.getInt("mqtt_port");
-    mqttUser   = settings.getString("mqtt_user");
-    mqttPass   = settings.getString("mqtt_pass");
+    mqttPort = settings.getInt("mqtt_port");
+    mqttUser = settings.getString("mqtt_user");
+    mqttPass = settings.getString("mqtt_pass");
 
     String mdns = settings.getString("mdns");
     String name = settings.getString("name");
 
     topic_command = "splitflap/" + mdns + "/set";
-    topic_state   = "splitflap/" + mdns + "/state";
-    topic_avail   = "splitflap/" + mdns + "/availability";
-    topic_config_text  = "homeassistant/text/splitflap_text_" + mdns + "/config";
+    topic_state = "splitflap/" + mdns + "/state";
+    topic_avail = "splitflap/" + mdns + "/availability";
+    topic_config_text = "homeassistant/text/splitflap_text_" + mdns + "/config";
     topic_config_sensor = "homeassistant/sensor/splitflap_sensor_" + mdns + "/config";
 
     mqttClient.setServer(mqttServer.c_str(), mqttPort);
-    mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
+    mqttClient.setCallback([this](char *topic, byte *payload, unsigned int length) {
         String message;
         for (unsigned int i = 0; i < length; i++) {
-            message += (char)payload[i];
+            message += (char) payload[i];
         }
         Serial.printf("[MQTT] Message received: %s\n", message.c_str());
         if (display) {
@@ -35,7 +35,7 @@ void SplitFlapMqtt::setup() {
 }
 
 void SplitFlapMqtt::connectToMqtt() {
-    if (!mqttClient.connected()) {
+    if (! mqttClient.connected()) {
         Serial.println("[MQTT] Attempting to connect...");
         String clientId = "SplitFlap-" + settings.getString("mdns");
         if (mqttUser.length() > 0) {
@@ -49,6 +49,7 @@ void SplitFlapMqtt::connectToMqtt() {
 
             String mdns = settings.getString("mdns");
 
+            // clang-format off
             String payload_text = "{"
                 "\"name\":\"" + settings.getString("name") + "\","
                 "\"unique_id\":\"splitflap_text_" + mdns + "\","
@@ -78,6 +79,7 @@ void SplitFlapMqtt::connectToMqtt() {
                     "\"sw_version\":\"1.0.0\""
                 "}"
             "}";
+            // clang-format on
 
             mqttClient.subscribe(topic_command.c_str());
             mqttClient.publish(topic_avail.c_str(), "online", true);
@@ -90,11 +92,11 @@ void SplitFlapMqtt::connectToMqtt() {
     }
 }
 
-void SplitFlapMqtt::setDisplay(SplitFlapDisplay* d) {
+void SplitFlapMqtt::setDisplay(SplitFlapDisplay *d) {
     display = d;
 }
 
-void SplitFlapMqtt::publishState(const String& message) {
+void SplitFlapMqtt::publishState(const String &message) {
     Serial.println("[MQTT] Publishing state: " + message);
     mqttClient.publish(topic_state.c_str(), message.c_str(), true);
 }
@@ -104,5 +106,5 @@ void SplitFlapMqtt::loop() {
 }
 
 bool SplitFlapMqtt::isConnected() {
-  return mqttClient.connected();
+    return mqttClient.connected();
 }

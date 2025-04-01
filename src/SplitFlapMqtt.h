@@ -2,25 +2,26 @@
 
 #include "JsonSettings.h"
 #include "SplitFlapDisplay.h"
+
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 
 class SplitFlapMqtt {
-public:
-    SplitFlapMqtt(JsonSettings& settings, WiFiClient& client); // updated constructor
+  public:
+    SplitFlapMqtt(JsonSettings &settings, WiFiClient &client); // updated constructor
 
     void setup();
-    void loop(); // needed for PubSubClient3
-    void publishState(const String& message);
-    void setDisplay(SplitFlapDisplay* display);
+    void loop();                                               // needed for PubSubClient3
+    void publishState(const String &message);
+    void setDisplay(SplitFlapDisplay *display);
     bool isConnected();
 
-private:
-    PubSubClient mqttClient;             // PubSubClient instead of AsyncMqttClient
-    WiFiClient& wifiClient;              // store reference to WiFiClient
+  private:
+    PubSubClient mqttClient; // PubSubClient instead of AsyncMqttClient
+    WiFiClient &wifiClient;  // store reference to WiFiClient
 
-    JsonSettings& settings;
-    SplitFlapDisplay* display;
+    JsonSettings &settings;
+    SplitFlapDisplay *display;
 
     void connectToMqtt();
 

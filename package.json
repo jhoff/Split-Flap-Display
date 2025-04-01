@@ -4,8 +4,8 @@
     "scripts": {
         "build": "npm run format && npm run assets && npm run pio",
         "format": "npm run format:cpp && npm run format:web",
-        "format:web": "prettier --write 'src/**/*.{js,json,css,html}' platformio.ini package.json readme.md vite.config.mjs tailwind.config.js",
-        "format:cpp": "command -v dlang-format >/dev/null 2>&1 && find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i || echo 'clang-format not found, skipping format:cpp'",
+        "format:web": "prettier --write 'src/**/*.{js,json,css,html}' platformio.ini package.json README.md vite.config.mjs tailwind.config.js",
+        "format:cpp": "command -v clang-format >/dev/null 2>&1 && find src -iname '*.h' -o -iname '*.cpp' -o -iname '*.ino' | xargs clang-format -i || echo 'clang-format not found, skipping format:cpp'",
         "assets": "vite build --emptyOutDir",
         "pio": "npm run pio:firmware && sleep 2 && npm run pio:filesystem",
         "pio:firmware": "pio run -t upload",

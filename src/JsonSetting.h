@@ -3,8 +3,7 @@
 #include <Preferences.h>
 #include <vector>
 
-typedef enum
-{
+typedef enum {
     JST_STR,
     JST_INT,
     JST_FLOAT,

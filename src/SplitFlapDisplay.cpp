@@ -32,7 +32,9 @@ void SplitFlapDisplay::init() {
     Serial.println();
 
     for (uint8_t i = 0; i < numModules; i++) {
-        modules[i] = SplitFlapModule(moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition, charSetSize);
+        modules[i] = SplitFlapModule(
+            moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition, charSetSize
+        );
     }
 
     SDAPin = settings.getInt("sdaPin");

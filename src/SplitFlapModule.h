@@ -19,7 +19,7 @@ class SplitFlapModule {
     int getMagnetPosition() const { return magnetPosition; } // position where magnet is detected
     int getCharPosition(char inputChar);                     // get integer position given single character
     int getPosition() const { return position; }             // get integer position
-    int getCharsetSize() const { return numChars; } // getter for charset size
+    int getCharsetSize() const { return numChars; }          // getter for charset size
 
     bool readHallEffectSensor();                             // return the value read by the hall effect
     // sensor
@@ -42,9 +42,9 @@ class SplitFlapModule {
     static const int motorPins[];   // Array of motor pins
     static const int HallEffectPIN; // Hall Effect Sensor Pin (On PCF8575)
 
-    const char* chars;             // pointer to active character set
-    int charPositions[48];         // support up to 48 characters
-    int numChars;                  // current number of characters
+    const char *chars;              // pointer to active character set
+    int charPositions[48];          // support up to 48 characters
+    int numChars;                   // current number of characters
     int charSetSize;
 
     static const char StandardChars[37];

@@ -3,29 +3,32 @@
 // Array of characters, in order, the first item is located on the magnet on the
 // character drum
 const char SplitFlapModule::StandardChars[37] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                                         'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-                                         'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+                                                 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
+                                                 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-const char SplitFlapModule::ExtendedChars[48] = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                                         'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-                                         'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                                         '\'', ':', '?', '!', '.', '-', '/', '$', '@', '#', '%',};
-
+const char SplitFlapModule::ExtendedChars[48] = {
+    ' ', 'A', 'B', 'C', 'D', 'E',  'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U',  'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
+    '5', '6', '7', '8', '9', '\'', ':', '?', '!', '.', '-', '/', '$', '@', '#', '%',
+};
 
 bool hasErrored = false;
 
 // Default Constructor
-SplitFlapModule::SplitFlapModule() : address(0), position(0), stepNumber(0), stepsPerRot(0), chars(StandardChars), numChars(37), charSetSize(37) {
-  magnetPosition = 710;
+SplitFlapModule::SplitFlapModule()
+    : address(0), position(0), stepNumber(0), stepsPerRot(0), chars(StandardChars), numChars(37), charSetSize(37) {
+    magnetPosition = 710;
 }
 
 // Constructor implementation
-SplitFlapModule::SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize)
+SplitFlapModule::SplitFlapModule(
+    uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize
+)
     : address(I2Caddress), position(0), stepNumber(0), stepsPerRot(stepsPerFullRotation), charSetSize(charsetSize) {
-  magnetPosition = magnetPos + stepOffset;
+    magnetPosition = magnetPos + stepOffset;
 
-  chars = (charsetSize == 48) ? ExtendedChars : StandardChars;
-  numChars = (charsetSize == 48) ? 48 : 37;
+    chars = (charsetSize == 48) ? ExtendedChars : StandardChars;
+    numChars = (charsetSize == 48) ? 48 : 37;
 }
 
 void SplitFlapModule::writeIO(uint16_t data) {
@@ -51,11 +54,11 @@ void SplitFlapModule::writeIO(uint16_t data) {
 
 // Init Module, Setup IO Board
 void SplitFlapModule::init() {
-    float stepSize = (float)stepsPerRot / (float)numChars;
+    float stepSize = (float) stepsPerRot / (float) numChars;
     float currentPosition = 0;
     for (int i = 0; i < numChars; i++) {
-      charPositions[i] = (int)currentPosition;
-      currentPosition += stepSize;
+        charPositions[i] = (int) currentPosition;
+        currentPosition += stepSize;
     }
 
     uint16_t initState = 0b1111111111100001; // Pin 15 (17) as INPUT, Pins 1-4 as OUTPUT

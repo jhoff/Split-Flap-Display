@@ -33,6 +33,7 @@ class SplitFlapDisplay {
     void testCount();
     void testRandom(float speed = MAX_RPM);
     int getNumModules() { return numModules; }
+    int getCharsetSize() const { return charSetSize; }
     void setMqtt(SplitFlapMqtt *mqttHandler);
 
   private:
@@ -48,9 +49,10 @@ class SplitFlapDisplay {
     int moduleOffsets[MAX_MODULES];
     int displayOffset;
 
-    float maxVel;    // Max Velocity In RPM
-    int stepsPerRot; // number of motor steps per full rotation of character
-    // drum
+    float maxVel;       // Max Velocity In RPM
+    int charSetSize;    // 37 for standard, 48 for extended
+    int stepsPerRot;    // number of motor steps per full rotation of character
+                        // drum
     int magnetPosition; // position of drum wheel when magnet is detected
     int SDAPin;         // SDA pin
     int SCLPin;         // SCL pin

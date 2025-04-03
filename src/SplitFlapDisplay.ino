@@ -37,6 +37,7 @@ JsonSettings settings = JsonSettings("config", {
     {"sclPin", JsonSetting(9)},
     {"stepsPerRot", JsonSetting(2048)},
     {"maxVel", JsonSetting(15.0f)},
+    {"charset", JsonSetting(37)},
     // Operational States
     {"mode", JsonSetting(0)}
 });

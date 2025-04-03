@@ -239,7 +239,7 @@
             >
             <select
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-white"
-                x-model="settings.charset"
+                x-model.number="settings.charset"
                 id="charset"
             >
                 <option value="37">Standard (37)</option>
@@ -462,7 +462,6 @@
                     save() {
                         this.saving = true;
                         this.errors = {};
-                        this.settings.charset = parseInt(this.settings.charset);
 
                         fetch("/settings", {
                             method: "POST",

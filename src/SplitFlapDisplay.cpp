@@ -160,7 +160,18 @@ void SplitFlapDisplay::writeChar(char inputChar, float speed) {
     moveTo(targetPositions, speed);
 }
 
+String sanitizeInput(const String &input) {
+    String sanitized = input;
+
+    // Replace problematic characters
+    sanitized.replace("'", "'\\'");
+    sanitized.replace("%", "%%");
+
+    return sanitized;
+}
+
 void SplitFlapDisplay::writeString(String inputString, float speed, bool centering) {
+    inputString = sanitizeInput(inputString);
     String displayString = inputString.substring(0, numModules);
 
     if (centering) {

@@ -98,7 +98,7 @@ void SplitFlapMqtt::setDisplay(SplitFlapDisplay *d) {
 
 void SplitFlapMqtt::publishState(const String &message) {
     Serial.println("[MQTT] Publishing state: " + message);
-    mqttClient.publish(topic_config_sensor.c_str(), message.c_str(), true);
+    mqttClient.publish(topic_state.c_str(), message.c_str(), true);
 }
 
 void SplitFlapMqtt::loop() {

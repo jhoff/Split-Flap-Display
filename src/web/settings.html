@@ -42,6 +42,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="text"
+                id="name"
                 x-model="settings.name"
                 placeholder="Enter a name for this display"
             />
@@ -58,6 +59,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="text"
+                id="mdns"
                 x-model="settings.mdns"
                 placeholder="Enter mDNS hostname"
             />
@@ -74,6 +76,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="text"
+                id="otaPass"
                 x-model="settings.otaPass"
                 placeholder="Enter OTA Password"
             />
@@ -91,6 +94,7 @@
                 <select
                     class="w-full p-3 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                     x-model="settings.timezone"
+                    id="timezone"
                 >
                     <template x-for="(name, zone) in timezones" :key="zone">
                         <option
@@ -217,6 +221,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="moduleCount"
                 x-model="settings.moduleCount"
                 min="1"
                 max="8"
@@ -229,12 +234,25 @@
                 x-text="errors.message"
             ></div>
 
+            <label for="charset" class="block text-left text-lg mt-4"
+                >Character Set</label
+            >
+            <select
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-white"
+                x-model.number="settings.charset"
+                id="charset"
+            >
+                <option value="37">Standard (37)</option>
+                <option value="48">Extended (48)</option>
+            </select>
+
             <label for="moduleAddresses" class="block text-left text-lg mt-4"
                 >Module Addresses (comma-separated)</label
             >
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="text"
+                id="moduleAddresses"
                 x-model="settings.moduleAddresses"
                 placeholder="Enter addresses"
             />
@@ -251,6 +269,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="magnetPosition"
                 x-model="settings.magnetPosition"
                 placeholder="Enter magnet position"
             />
@@ -267,6 +286,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="text"
+                id="moduleOffsets"
                 x-model="settings.moduleOffsets"
                 placeholder="Enter module offsets"
             />
@@ -283,6 +303,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="displayOffset"
                 x-model="settings.displayOffset"
                 placeholder="Enter display offset"
             />
@@ -299,6 +320,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="sdaPin"
                 x-model="settings.sdaPin"
                 placeholder="Enter SDA pin"
             />
@@ -315,6 +337,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="sclPin"
                 x-model="settings.sclPin"
                 placeholder="Enter SCL pin"
             />
@@ -331,6 +354,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="stepsPerRot"
                 x-model="settings.stepsPerRot"
                 placeholder="Enter steps per rotation"
             />
@@ -347,6 +371,7 @@
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-gray-700 text-gray-100"
                 type="number"
+                id="maxVel"
                 step="0.1"
                 x-model="settings.maxVel"
                 placeholder="Enter max velocity"
@@ -437,6 +462,7 @@
                     save() {
                         this.saving = true;
                         this.errors = {};
+
                         fetch("/settings", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },

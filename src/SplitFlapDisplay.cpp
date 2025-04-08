@@ -12,6 +12,7 @@ void SplitFlapDisplay::init() {
     displayOffset = settings.getInt("displayOffset");
     magnetPosition = settings.getInt("magnetPosition");
     maxVel = settings.getFloat("maxVel");
+    charSetSize = settings.getInt("charset");
 
     std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
     for (int i = 0; i < numModules; i++) {
@@ -31,7 +32,9 @@ void SplitFlapDisplay::init() {
     Serial.println();
 
     for (uint8_t i = 0; i < numModules; i++) {
-        modules[i] = SplitFlapModule(moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition);
+        modules[i] = SplitFlapModule(
+            moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition, charSetSize
+        );
     }
 
     SDAPin = settings.getInt("sdaPin");
@@ -157,7 +160,18 @@ void SplitFlapDisplay::writeChar(char inputChar, float speed) {
     moveTo(targetPositions, speed);
 }
 
+String sanitizeInput(const String &input) {
+    String sanitized = input;
+
+    // Replace problematic characters
+    sanitized.replace("'", "'\\'");
+    sanitized.replace("%", "%%");
+
+    return sanitized;
+}
+
 void SplitFlapDisplay::writeString(String inputString, float speed, bool centering) {
+    inputString = sanitizeInput(inputString);
     String displayString = inputString.substring(0, numModules);
 
     if (centering) {

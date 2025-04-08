@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+input[type="number"].no-buttons::-webkit-outer-spin-button,
+input[type="number"].no-buttons::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"].no-buttons {
+    -moz-appearance: textfield; /* Firefox */
+}

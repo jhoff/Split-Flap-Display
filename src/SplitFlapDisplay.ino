@@ -82,7 +82,6 @@ void setup() {
         splitflapMqtt.setup();
         splitflapMqtt.setDisplay(&display);
         display.setMqtt(&splitflapMqtt);
-        display.homeToString("");
 
         display.writeString("OK");
         delay(250);

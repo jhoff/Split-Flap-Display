@@ -69,7 +69,6 @@ void SplitFlapMqtt::connectToMqtt() {
                 "\"unique_id\":\"splitflap_sensor_" + mdns + "\","
                 "\"state_topic\":\"" + topic_state + "\","
                 "\"availability_topic\":\"" + topic_avail + "\","
-                "\"device_class\":\"none\","
                 "\"entity_category\":\"diagnostic\","
                 "\"device\":{"
                     "\"identifiers\":[\"splitflap_" + mdns + "\"],"

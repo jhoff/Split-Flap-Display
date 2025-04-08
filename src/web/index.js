@@ -4,7 +4,7 @@ window.Alpine = Alpine;
 document.addEventListener("alpine:init", () => {
     Alpine.data("page", (type) => ({
         get header() {
-            return (this.settings.name || "Split Flap");
+            return this.settings.name || "Split Flap";
         },
 
         loading: {
@@ -19,6 +19,8 @@ document.addEventListener("alpine:init", () => {
         },
         settings: {
             mode: 2,
+            dateFormat: "ddd dd/MM",
+            timeFormat: "HH:mm",
         },
         errors: {},
         timezones: {},
@@ -32,26 +34,34 @@ document.addEventListener("alpine:init", () => {
         centerText: false,
 
         get processing() {
-            return this.saving || this.loading.settings || this.loading.timezones;
+            return (
+                this.saving || this.loading.settings || this.loading.timezones
+            );
         },
 
-        // 🆕 Helper for per-module input arrays
         get addressArray() {
-            return this.settings.moduleAddresses?.split(',').map(s => s.trim()) || [];
+            return (
+                this.settings.moduleAddresses
+                    ?.split(",")
+                    .map((s) => s.trim()) || []
+            );
         },
         setAddress(index, value) {
             const arr = this.addressArray;
             arr[index] = value;
-            this.settings.moduleAddresses = arr.join(',');
+            this.settings.moduleAddresses = arr.join(",");
         },
 
         get offsetArray() {
-            return this.settings.moduleOffsets?.split(',').map(s => s.trim()) || [];
+            return (
+                this.settings.moduleOffsets?.split(",").map((s) => s.trim()) ||
+                []
+            );
         },
         setOffset(index, value) {
             const arr = this.offsetArray;
             arr[index] = value;
-            this.settings.moduleOffsets = arr.join(',');
+            this.settings.moduleOffsets = arr.join(",");
         },
 
         init() {
@@ -67,7 +77,9 @@ document.addEventListener("alpine:init", () => {
                 .then((data) => {
                     Object.assign(this.settings, data);
                 })
-                .catch(() => this.showDialog("Failed to load settings", "error", true))
+                .catch(() =>
+                    this.showDialog("Failed to load settings", "error", true),
+                )
                 .finally(() => {
                     this.loading.settings = false;
                 });
@@ -80,7 +92,11 @@ document.addEventListener("alpine:init", () => {
                     this.timezones = data;
                 })
                 .catch(() =>
-                    this.showDialog("Failed to load timezones. Refresh the page.", "error", true)
+                    this.showDialog(
+                        "Failed to load timezones. Refresh the page.",
+                        "error",
+                        true,
+                    ),
                 )
                 .finally(() => (this.loading.timezones = false));
         },
@@ -88,15 +104,24 @@ document.addEventListener("alpine:init", () => {
         updateDisplay() {
             if (this.settings.mode === 6) {
                 if (this.delay < 1) {
-                    return this.showDialog("Delay must be at least 1 second.", "error");
+                    return this.showDialog(
+                        "Delay must be at least 1 second.",
+                        "error",
+                    );
                 }
 
                 if (this.singleMode && this.singleWord.trim() === "") {
-                    return this.showDialog("Single word cannot be empty.", "error");
+                    return this.showDialog(
+                        "Single word cannot be empty.",
+                        "error",
+                    );
                 }
 
                 if (!this.singleMode && this.multiWords.length === 0) {
-                    return this.showDialog("Word list cannot be empty.", "error");
+                    return this.showDialog(
+                        "Word list cannot be empty.",
+                        "error",
+                    );
                 }
             }
 
@@ -112,7 +137,9 @@ document.addEventListener("alpine:init", () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         mode: this.singleMode ? "single" : "multiple",
-                        words: this.singleMode ? [this.singleWord] : this.multiWords,
+                        words: this.singleMode
+                            ? [this.singleWord]
+                            : this.multiWords,
                         delay: this.delay,
                         center: this.centerText,
                     }),
@@ -155,16 +182,24 @@ document.addEventListener("alpine:init", () => {
                         }, 10000);
                     }
                 })
-                .catch(() => this.showDialog("Failed to save settings.", "error"))
+                .catch(() =>
+                    this.showDialog("Failed to save settings.", "error"),
+                )
                 .finally(() => (this.saving = false));
         },
 
         reset() {
-            if (confirm("Are you sure you want to reset settings to defaults?")) {
+            if (
+                confirm("Are you sure you want to reset settings to defaults?")
+            ) {
                 fetch("/settings/reset", { method: "POST" })
                     .then((res) => res.json())
                     .then((data) => {
-                        this.showDialog(data.message, data.type, data.persistent);
+                        this.showDialog(
+                            data.message,
+                            data.type,
+                            data.persistent,
+                        );
                         this.loadSettings();
                     })
                     .catch(() => {
@@ -181,6 +216,24 @@ document.addEventListener("alpine:init", () => {
             if (!persistent) {
                 setTimeout(() => (this.dialog.show = false), 3000);
             }
+        },
+    }));
+
+    Alpine.data("helpModal", () => ({
+        visible: false,
+        title: "",
+        content: "",
+
+        open({ title, content }) {
+            this.title = title;
+            this.content = content;
+            this.visible = true;
+        },
+
+        close() {
+            this.visible = false;
+            this.title = "";
+            this.content = "";
         },
     }));
 });

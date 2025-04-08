@@ -18,7 +18,9 @@ JsonSettings settings = JsonSettings("config", {
     {"name", JsonSetting("My Display")},
     {"mdns", JsonSetting("splitflap")},
     {"otaPass", JsonSetting("")},
-    {"timezone", JsonSetting("Etc/UTC")},
+    {"timezone", JsonSetting("UTC0")},
+    {"dateFormat", JsonSetting("{dd}-{mm}-{yy}")},
+    {"timeFormat", JsonSetting("{HH}:{mm}")},
     // Wifi Settings
     {"ssid", JsonSetting("")},
     {"password", JsonSetting("")},
@@ -83,7 +85,7 @@ void setup() {
         splitflapMqtt.setDisplay(&display);
         display.setMqtt(&splitflapMqtt);
 
-        display.writeString("OK");
+        display.homeToString("OK");
         delay(250);
         display.writeString("");
     }
@@ -137,23 +139,14 @@ void multiInputMode() {
 void dateMode() {
     if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
         webServer.setLastCheckDateTime(millis());
-        String currentDay = webServer.getCurrentDay();
-        String dayPrefix = webServer.getDayPrefix(3);
 
-        String outputString = " ";
-        switch (display.getNumModules()) {
-            case 2: outputString = currentDay; break;
-            case 3: outputString = dayPrefix; break;
-            case 4: outputString = " " + currentDay + " "; break;
-            case 5: outputString = dayPrefix + currentDay; break;
-            case 6: outputString = dayPrefix + " " + currentDay; break;
-            case 7: outputString = dayPrefix + "  " + currentDay; break;
-            case 8: outputString = dayPrefix + currentDay + webServer.getMonthPrefix(3); break;
-            default: break;
-        }
-        if (outputString != webServer.getWrittenString()) {
-            display.writeString(outputString, MAX_RPM, webServer.getCentering());
-            webServer.setWrittenString(outputString);
+        String format = settings.getString("dateFormat");
+        String strftimeFormat = convertToStrftime(format);
+        String result = renderDate(strftimeFormat);
+
+        if (result.length() <= display.getNumModules() && result != webServer.getWrittenString()) {
+            display.writeString(result, MAX_RPM);
+            webServer.setWrittenString(result);
         }
     }
 }
@@ -161,24 +154,18 @@ void dateMode() {
 void timeMode() {
     if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
         webServer.setLastCheckDateTime(millis());
-        String currentHour = webServer.getCurrentHour();
-        String currentMinute = webServer.getCurrentMinute();
-        String outputString = " ";
 
-        switch (display.getNumModules()) {
-            case 2: outputString = currentMinute; break;
-            case 3: outputString = " " + currentMinute; break;
-            case 4: outputString = currentHour + "" + currentMinute; break;
-            case 5: outputString = currentHour + " " + currentMinute; break;
-            case 6: outputString = " " + currentHour + " " + currentMinute; break;
-            case 7: outputString = " " + currentHour + " " + currentMinute + " "; break;
-            case 8: outputString = " " + currentHour + currentMinute + " "; break;
-            default: break;
-        }
+        // Get user-friendly format from settings (fallback to "HH:mm")
+        String userFormat = settings.getString("timeFormat").length() > 0 ? settings.getString("timeFormat") : "HH:mm";
 
-        if (outputString != webServer.getWrittenString()) {
-            display.writeString(outputString, MAX_RPM, webServer.getCentering());
-            webServer.setWrittenString(outputString);
+        // Convert to strftime-compatible format
+        String strftimeFormat = convertToStrftime(userFormat);
+        String result = renderTime(strftimeFormat);
+
+        // Write to display if it changed
+        if (result != webServer.getWrittenString()) {
+            display.writeString(result, MAX_RPM);
+            webServer.setWrittenString(result);
         }
     }
 }
@@ -238,4 +225,62 @@ String extractFromCSV(String str, int index) {
     }
 
     return str.substring(startIndex, endIndex);
+}
+
+String renderDate(const String &format) {
+    char buf[64];
+    time_t now = time(nullptr);
+    struct tm *timeinfo = localtime(&now);
+
+    strftime(buf, sizeof(buf), format.c_str(), timeinfo);
+
+    return trimToModuleCount(String(buf), display.getNumModules());
+}
+
+String renderTime(const String &format) {
+    char buf[64];
+    time_t now = time(nullptr);
+    struct tm *timeinfo = localtime(&now);
+
+    strftime(buf, sizeof(buf), format.c_str(), timeinfo);
+
+    return trimToModuleCount(String(buf), display.getNumModules());
+}
+
+String trimToModuleCount(const String &str, int maxLen) {
+    return str.length() > maxLen ? str.substring(0, maxLen) : str;
+}
+
+String convertToStrftime(String userFormat) {
+    struct FormatToken
+    {
+        const char *token;
+        const char *strftime;
+    };
+
+    FormatToken tokens[] = {
+        // Date formats
+        {"{yyyy}", "%Y"}, // 4-digit year (e.g. 2025)
+        {"{dddd}", "%A"}, // Full weekday name (e.g. Monday)
+        {"{mmmm}", "%B"}, // Full month name (e.g. January)
+        {"{ddd}", "%a"},  // Abbreviated weekday name (e.g. Mon)
+        {"{mmm}", "%b"},  // Abbreviated month name (e.g. Apr)
+        {"{dd}", "%d"},   // 2-digit day of month, zero-padded (01–31)
+        {"{mm}", "%m"},   // 2-digit month number, zero-padded (01–12)
+        {"{yy}", "%y"},   // 2-digit year (e.g. 25)
+        {"{ww}", "%V"},   // ISO 8601 week number (01–53)
+        {"{D}", "%j"},    // Day of the year (001–366)
+
+        // Time formats
+        {"{HH}", "%H"},   // Hours (24-hour clock, 00–23)
+        {"{hh}", "%I"},   // Hours (12-hour clock, 01–12)
+        {"{MM}", "%M"},   // Minutes (00–59)
+        {"{AMPM}", "%p"}, // AM or PM
+    };
+
+    for (auto &t : tokens) {
+        userFormat.replace(t.token, t.strftime);
+    }
+
+    return userFormat;
 }

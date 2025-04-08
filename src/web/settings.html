@@ -1,488 +1,639 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="icon" href="data:,"/>
-    <title x-text="header"></title>
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-    </style>
-    <link rel="stylesheet" href="index.css"/>
-    <script defer src="index.js" type="module"></script>
-</head>
-<body x-data="Object.assign(page('Settings'), { showAdvanced: false })"
-      class="flex flex-col items-center justify-center min-h-screen bg-neutral-900 text-gray-100">
-    <div
-        class="flex flex-col items-center justify-center bg-neutral-800 shadow-[0_0_30px_10px_#222] p-6 m-6
-        rounded-lg  max-w-lg w-11/12 text-center"
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="data:," />
+        <title x-text="header"></title>
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
+        <link rel="stylesheet" href="index.css" />
+        <script defer src="index.js" type="module"></script>
+    </head>
+    <body
+        x-data="Object.assign(page('Settings'),  { showAdvanced: false }, {
+    showHelp: false,
+    helpTitle: '',
+    helpContent: '',
+    showHelpModal(title, content) {
+        this.helpTitle = title;
+        this.helpContent = content;
+        this.showHelp = true;
+    }
+})"
+        class="flex flex-col items-center justify-center min-h-screen bg-neutral-900 text-gray-100"
     >
+        <div
+            class="flex flex-col items-center justify-center bg-neutral-800 shadow-[0_0_30px_10px_#222] p-6 m-6 rounded-lg max-w-lg w-11/12 text-center"
+        >
+            <h2
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mb-4"
+            >
+                General Settings
+            </h2>
 
-    <h2 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mb-4">
-        General Settings
-    </h2>
-
-        <div class="flex gap-2 flex-wrap">
-            <div class="grow">
-                <label for="name" class="block text-left text-lg mt-4">
-                    Display Name
-                </label>
-                <input
+            <div class="flex gap-2 flex-wrap">
+                <div class="grow">
+                    <label for="name" class="block text-left text-lg mt-4">
+                        Display Name
+                    </label>
+                    <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
                         id="name"
                         x-model="settings.name"
                         placeholder="Enter a name for this display"
-                />
-                <div
+                    />
+                    <div
                         class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
                         x-cloak
                         x-show="errors.key === 'name'"
                         x-text="errors.message"
-                ></div>
-            </div>
-            <div class="grow">
-                <label for="mdns" class="block text-left text-lg mt-4">
-                    mDNS Hostname
-                </label>
-                <input
+                    ></div>
+                </div>
+                <div class="grow">
+                    <label for="mdns" class="block text-left text-lg mt-4">
+                        mDNS Hostname
+                    </label>
+                    <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
                         id="mdns"
                         x-model="settings.mdns"
                         placeholder="Enter mDNS hostname"
-                />
-                <div
+                    />
+                    <div
                         class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
                         x-cloak
                         x-show="errors.key === 'mdns'"
                         x-text="errors.message"
-                ></div>
+                    ></div>
+                </div>
             </div>
-        </div>
 
-    <label for="timezone" class="block text-left text-lg mt-4">
-        Timezone
-    </label>
-    <div class="relative w-full mt-2">
-        <select
-                class="w-full p-3 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                x-model="settings.timezone"
-                id="timezone"
-        >
-            <template x-for="(name, zone) in timezones" :key="zone">
-                <option
-                        :value="zone"
-                        x-text="zone"
-                        :selected="zone === settings.timezone"
-                ></option>
-            </template>
-        </select>
-        <div x-show="loading.timezones"
-             class="absolute inset-0 flex justify-center items-center rounded-md"
-        >
-            <svg
-                    class="animate-spin h-5 w-5 text-gray-100"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+            <label for="timezone" class="block text-left text-lg mt-4">
+                Timezone
+            </label>
+            <div class="relative w-full mt-2">
+                <select
+                    class="w-full p-3 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                    x-model="settings.timezone"
+                    id="timezone"
+                >
+                    <template x-for="(name, zone) in timezones" :key="zone">
+                        <option
+                            :value="zone"
+                            x-text="zone"
+                            :selected="zone === settings.timezone"
+                        ></option>
+                    </template>
+                </select>
+                <div
+                    x-show="loading.timezones"
+                    class="absolute inset-0 flex justify-center items-center rounded-md"
+                >
+                    <svg
+                        class="animate-spin h-5 w-5 text-gray-100"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+            <div
+                class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                x-cloak
+                x-show="errors.key === 'timezone'"
+                x-text="errors.message"
+            ></div>
+
+            <div class="grid grid-cols-2 gap-2 w-full">
+                <div>
+                    <label class="flex text-lg mt-4 justify-between">
+                        Date Format
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="text"
+                        x-model="settings.dateFormat"
+                        placeholder="e.g. {dd}-{mm}-{yy}"
+                    />
+                </div>
+                <div>
+                    <label class="flex text-lg mt-4 justify-between"
+                        >Time Format
+                        <button
+                            type="button"
+                            class="ml-1 text-sm text-gray-400 hover:text-white cursor-pointer transition-colors"
+                            @click="$dispatch('open-help', {
+            title: 'Date & Time Format Help',
+            content: `
+                <p><strong>Date Tokens:</strong></p>
+                <ul class='list-disc list-inside pl-2'>
+                    <li><code>{dd}</code> – Day of month (01–31)</li>
+                    <li><code>{d}</code> – Day of month (1–31, no leading 0)</li>
+                    <li><code>{mmm}</code> – Abbreviated month name (e.g. Apr)</li>
+                    <li><code>{mm}</code> – Month as number (01–12)</li>
+                    <li><code>{yy}</code> – Two-digit year (e.g. 24)</li>
+                    <li><code>{yyyy}</code> – Full year (e.g. 2024)</li>
+                    <li><code>{ddd}</code> – Weekday abbreviation (e.g. Mon)</li>
+                    <li><code>{dddd}</code> – Full weekday (e.g. Monday)</li>
+                    <li><code>{ww}</code> – Week number (ISO)</li>
+                    <li><code>{D}</code> – Day of the year (001–366)</li>
+                </ul>
+                <p class='mt-2'><strong>Time Tokens:</strong></p>
+                <ul class='list-disc list-inside pl-2'>
+                    <li><code>{HH}</code> – Hour (00–23)</li>
+                    <li><code>{hh}</code> – Hour (01–12)</li>
+                    <li><code>{mm}</code> – Minutes (00–59)</li>
+                    <li><code>{ss}</code> – Seconds divided by 10 (0–5)</li>
+                    <li><code>{AM}</code> – AM/PM (uppercase)</li>
+                </ul>
+                <p class='mt-2 text-xs italic text-gray-400'>
+                    Tokens are case-sensitive. You can mix with literal text,
+                    like <code>{ddd} {dd}-{mm}</code> → “Mon 08-04”.
+                    You can also mix date and time tokens but you have to select the corresponding mode
+                </p>
+            `
+        })"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-6"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                                />
+                            </svg>
+                        </button>
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="text"
+                        x-model="settings.timeFormat"
+                        placeholder="e.g. {HH}:{mm}"
+                    />
+                </div>
+            </div>
+
+            <h2
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2"
             >
-                <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                ></circle>
-                <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-            </svg>
-        </div>
-    </div>
-    <div
-            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-            x-cloak
-            x-show="errors.key === 'timezone'"
-            x-text="errors.message"
-    ></div>
+                Wi-Fi Settings
+            </h2>
 
-    <h2 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2">
-        Wi-Fi Settings
-    </h2>
+            <div class="flex gap-2 flex-wrap">
+                <div class="grow">
+                    <label for="ssid" class="block text-left text-lg mt-4">
+                        Wi-Fi SSID
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="text"
+                        id="ssid"
+                        x-model="settings.ssid"
+                        placeholder="WiFi SSID"
+                    />
+                    <div
+                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                        x-cloak
+                        x-show="errors.key === 'ssid'"
+                        x-text="errors.message"
+                    ></div>
+                </div>
+                <div class="grow">
+                    <label for="password" class="block text-left text-lg mt-4">
+                        Wi-Fi Password
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="password"
+                        id="password"
+                        x-model="settings.password"
+                        placeholder="WiFi Password"
+                    />
+                    <div
+                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                        x-cloak
+                        x-show="errors.key === 'password'"
+                        x-text="errors.message"
+                    ></div>
+                </div>
+            </div>
 
-    <div class="flex gap-2 flex-wrap">
-        <div class="grow">
-            <label class="block text-left text-lg mt-4">
-                Wi-Fi SSID
+            <label for="otaPass" class="block text-left text-lg mt-4">
+                OTA Password (will restart)
             </label>
             <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="text"
-                    x-model="settings.ssid"
-                    placeholder="WiFi SSID"
+                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                type="password"
+                id="otaPass"
+                x-model="settings.otaPass"
+                placeholder="Enter OTA Password"
             />
             <div
-                    class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                    x-cloak
-                    x-show="errors.key === 'ssid'"
-                    x-text="errors.message"
+                class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                x-cloak
+                x-show="errors.key === 'otaPass'"
+                x-text="errors.message"
             ></div>
-        </div>
-        <div class="grow">
+
+            <h2
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2"
+            >
+                MQTT Settings
+            </h2>
+
+            <div class="gap-2 grid grid-cols-2">
+                <div>
+                    <label class="block text-left text-lg mt-4"
+                        >MQTT Server</label
+                    >
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="text"
+                        x-model="settings.mqtt_server"
+                        placeholder="e.g. 192.168.1.10"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-left text-lg mt-4"
+                        >MQTT Port</label
+                    >
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="number"
+                        x-model="settings.mqtt_port"
+                        placeholder="1883"
+                    />
+                </div>
+            </div>
+
+            <div class="gap-2 grid grid-cols-2">
+                <div>
+                    <label class="block text-left text-lg mt-4">
+                        MQTT Username
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="text"
+                        x-model="settings.mqtt_user"
+                        placeholder="optional"
+                    />
+                </div>
+                <div>
+                    <label class="block text-left text-lg mt-4">
+                        MQTT Password
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="password"
+                        x-model="settings.mqtt_pass"
+                        placeholder="optional"
+                    />
+                </div>
+            </div>
+
+            <h2
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2"
+            >
+                Hardware Settings
+            </h2>
+
+            <div class="gap-2 grid grid-cols-2 w-full">
+                <div>
+                    <label
+                        for="moduleCount"
+                        class="block text-left text-lg mt-4"
+                    >
+                        Number of Modules
+                    </label>
+                    <input
+                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        type="number"
+                        id="moduleCount"
+                        x-model="settings.moduleCount"
+                        min="1"
+                        max="8"
+                        placeholder="1-8"
+                    />
+                    <div
+                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                        x-cloak
+                        x-show="errors.key === 'moduleCount'"
+                        x-text="errors.message"
+                    ></div>
+                </div>
+                <div>
+                    <label for="charset" class="block text-left text-lg mt-4">
+                        Character Set
+                    </label>
+                    <select
+                        class="w-full p-3.5 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-white"
+                        x-model.number="settings.charset"
+                        id="charset"
+                    >
+                        <option value="37">Standard (37)</option>
+                        <option value="48">Extended (48)</option>
+                    </select>
+                </div>
+            </div>
+
             <label class="block text-left text-lg mt-4">
-                Wi-Fi Password
+                Module Addresses
             </label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="password"
-                    x-model="settings.password"
-                    placeholder="WiFi Password"
-            />
+            <div class="grid grid-cols-4 md:grid-cols-8 gap-2 mt-2 w-full">
+                <template
+                    x-for="(val, i) in Array.from({ length: settings.moduleCount })"
+                    :key="`addr-${i}-${addressArray[i]}`"
+                >
+                    <input
+                        type="number"
+                        class="no-buttons w-full p-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        :value="addressArray[i]"
+                        @input="setAddress(i, $event.target.value)"
+                        :placeholder="`e.g. ${32 + i}`"
+                    />
+                </template>
+            </div>
             <div
-                    class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                    x-cloak
-                    x-show="errors.key === 'password'"
-                    x-text="errors.message"
+                class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                x-cloak
+                x-show="errors.key === 'moduleAddresses'"
+                x-text="errors.message"
             ></div>
-        </div>
-    </div>
 
-    <label for="otaPass" class="block text-left text-lg mt-4">
-        OTA Password (will restart)
-    </label>
-    <input
-            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-            type="password"
-            id="otaPass"
-            x-model="settings.otaPass"
-            placeholder="Enter OTA Password"
-    />
-    <div
-            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-            x-cloak
-            x-show="errors.key === 'otaPass'"
-            x-text="errors.message"
-    ></div>
-
-    <h2 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2">
-        MQTT Settings
-    </h2>
-
-    <div class="flex gap-2 flex-wrap">
-        <div class="grow">
-            <label class="block text-left text-lg mt-4">MQTT Server</label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="text"
-                    x-model="settings.mqtt_server"
-                    placeholder="e.g. 192.168.1.10"
-            />
-        </div>
-
-        <div class="grow">
-            <label class="block text-left text-lg mt-4">MQTT Port</label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="number"
-                    x-model="settings.mqtt_port"
-                    placeholder="1883"
-            />
-        </div>
-    </div>
-
-    <div class="flex gap-2 flex-wrap w-full">
-        <div class="grow">
-            <label class="block text-left text-lg mt-4">
-                MQTT Username
-            </label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="text"
-                    x-model="settings.mqtt_user"
-                    placeholder="optional"
-            />
-        </div>
-        <div class="grow">
-            <label class="block text-left text-lg mt-4">
-                MQTT Password
-            </label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="password"
-                    x-model="settings.mqtt_pass"
-                    placeholder="optional"
-            />
-        </div>
-    </div>
-
-    <h2 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2">
-        Hardware Settings
-    </h2>
-
-
-    <label for="charset" class="block text-left text-lg mt-4">
-        Character Set
-    </label>
-    <select
-            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-white"
-            x-model.number="settings.charset"
-            id="charset"
-    >
-        <option value="37">Standard (37)</option>
-        <option value="48">Extended (48)</option>
-    </select>
-
-
-    <div class="flex gap-2 flex-wrap w-full">
-        <div class="grow w-1/2">
-            <label for="moduleCount" class="block text-left text-lg mt-4">
-                Number of Modules
-            </label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="number"
-                    id="moduleCount"
-                    x-model="settings.moduleCount"
-                    min="1"
-                    max="8"
-                    placeholder="1-8"
-            />
+            <label class="block text-left text-lg mt-4"> Module Offsets </label>
+            <div class="grid grid-cols-4 md:grid-cols-8 gap-2 mt-2 w-full">
+                <template
+                    x-for="(val, i) in Array.from({ length: settings.moduleCount })"
+                    :key="`off-${i}-${offsetArray[i]}`"
+                >
+                    <input
+                        type="number"
+                        class="no-buttons w-full p-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                        :value="offsetArray[i]"
+                        @input="setOffset(i, $event.target.value)"
+                        placeholder="e.g. 0"
+                    />
+                </template>
+            </div>
             <div
-                    class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                    x-cloak
-                    x-show="errors.key === 'moduleCount'"
-                    x-text="errors.message"
+                class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                x-cloak
+                x-show="errors.key === 'moduleOffsets'"
+                x-text="errors.message"
             ></div>
-        </div>
 
-        <div class="grow">
-            <label for="magnetPosition" class="block text-left text-lg mt-4">
-                Magnet Position
-            </label>
-            <input
-                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    type="number"
-                    id="magnetPosition"
-                    x-model="settings.magnetPosition"
-                    placeholder="730"
-            />
-            <div
-                    class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                    x-cloak
-                    x-show="errors.key === 'magnetPosition'"
-                    x-text="errors.message"
-            ></div>
-        </div>
-    </div>
-
-    <label class="block text-left text-lg mt-4">
-        Module Addresses
-    </label>
-    <div class="grid grid-cols-4 md:grid-cols-8 gap-2 mt-2 w-full">
-        <template x-for="(val, i) in Array.from({ length: settings.moduleCount })" :key="`addr-${i}-${addressArray[i]}`">
-            <input
-                    type="number"
-                    class="no-buttons w-full p-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    :value="addressArray[i]"
-                    @input="setAddress(i, $event.target.value)"
-                    :placeholder="`e.g. ${32 + i}`"
-            />
-        </template>
-    </div>
-    <div
-            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-            x-cloak
-            x-show="errors.key === 'moduleAddresses'"
-            x-text="errors.message"
-    ></div>
-
-    <label class="block text-left text-lg mt-4">
-        Module Offsets
-    </label>
-    <div class="grid grid-cols-4 md:grid-cols-8 gap-2 mt-2 w-full">
-        <template x-for="(val, i) in Array.from({ length: settings.moduleCount })" :key="`off-${i}-${offsetArray[i]}`">
-            <input
-                    type="number"
-                    class="no-buttons w-full p-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                    :value="offsetArray[i]"
-                    @input="setOffset(i, $event.target.value)"
-                    placeholder="e.g. 0"
-            />
-        </template>
-    </div>
-    <div
-            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-            x-cloak
-            x-show="errors.key === 'moduleOffsets'"
-            x-text="errors.message"
-    ></div>
-
-    <a
-            href="#"
-            class="block w-full text-center text-sm hover:underline mt-6 mb-2"
-            x-on:click.prevent="showAdvanced = !showAdvanced"
-            x-text="showAdvanced ? 'Hide Advanced Settings ▲' : 'Show Advanced Settings ▼'"
-    ></a>
-
-    <div x-show="showAdvanced" x-cloak>
-        <div  class="grid grid-cols-3 gap-2 w-full">
-            <div>
-                <label for="sdaPin" class="block text-left text-lg mt-4"
-                >SDA Pin</label
-                >
-                <input
-                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                        type="number"
-                        id="sdaPin"
-                        x-model="settings.sdaPin"
-                        placeholder="Enter SDA pin"
-                />
-                <div
-                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                        x-cloak
-                        x-show="errors.key === 'sdaPin'"
-                        x-text="errors.message"
-                ></div>
-            </div>
-
-            <div>
-                <label for="sclPin" class="block text-left text-lg mt-4"
-                >SCL Pin</label
-                >
-                <input
-                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                        type="number"
-                        id="sclPin"
-                        x-model="settings.sclPin"
-                        placeholder="Enter SCL pin"
-                />
-                <div
-                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                        x-cloak
-                        x-show="errors.key === 'sclPin'"
-                        x-text="errors.message"
-                ></div>
-            </div>
-
-            <div>
-                <label for="displayOffset" class="block text-left text-lg mt-4"
-                >Display Offset</label
-                >
-                <input
-                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                        type="number"
-                        id="displayOffset"
-                        x-model="settings.displayOffset"
-                        placeholder="Enter display offset"
-                />
-                <div
-                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                        x-cloak
-                        x-show="errors.key === 'displayOffset'"
-                        x-text="errors.message"
-                ></div>
-            </div>
-
-            <div>
-                <label for="stepsPerRot" class="block text-left text-lg mt-4"
-                >Steps Per Rotation</label
-                >
-                <input
-                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                        type="number"
-                        id="stepsPerRot"
-                        x-model="settings.stepsPerRot"
-                        placeholder="Enter steps per rotation"
-                />
-                <div
-                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                        x-cloak
-                        x-show="errors.key === 'stepsPerRot'"
-                        x-text="errors.message"
-                ></div>
-            </div>
-
-            <div>
-                <label for="maxVel" class="block text-left text-lg mt-4"
-                >Max Velocity</label
-                >
-                <input
-                        class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                        type="number"
-                        id="maxVel"
-                        step="0.1"
-                        x-model="settings.maxVel"
-                        placeholder="Enter max velocity"
-                />
-                <div
-                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                        x-cloak
-                        x-show="errors.key === 'maxVel'"
-                        x-text="errors.message"
-                ></div>
-            </div>
-        </div>
-
-        <button
-                class="w-full p-3 mt-4 text-lg font-semibold text-white bg-red-600 rounded-md hover:bg-red-500 transition-colors"
-                x-on:click.prevent="reset()"
-                :disabled="processing"
-                :class="{'opacity-50 cursor-not-allowed': processing}"
-        >
-            Reset to Defaults
-        </button>
-
-        <div class="w-full mt-4" x-data="{ showDebug: false }">
             <a
-                    href="#"
-                    class="w-full p-3 text-xs font-semibold text-white bg-neutral-600 rounded-md hover:bg-neutral-500 transition-colors flex justify-between items-center"
-                    x-on:click.prevent="showDebug = !showDebug"
-            >
-                <span class="flex-1 text-left">Debugging Info</span>
-                <span
-                        class="flex-none"
-                        x-text="showDebug ? '▲' : '▼'"
-                ></span>
-            </a>
-            <div x-show="showDebug" class="mt-2">
-                    <pre
+                href="#"
+                class="block w-full text-center text-sm hover:underline mt-6 mb-2"
+                x-on:click.prevent="showAdvanced = !showAdvanced"
+                x-text="showAdvanced ? 'Hide Advanced Settings ▲' : 'Show Advanced Settings ▼'"
+            ></a>
+
+            <div x-show="showAdvanced" x-cloak>
+                <div class="grid grid-cols-3 gap-2 w-full">
+                    <div>
+                        <label
+                            for="magnetPosition"
+                            class="block text-left text-lg mt-4"
+                        >
+                            Magnet Position
+                        </label>
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="magnetPosition"
+                            x-model="settings.magnetPosition"
+                            placeholder="730"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'magnetPosition'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+                    <div>
+                        <label for="sdaPin" class="block text-left text-lg mt-4"
+                            >SDA Pin</label
+                        >
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="sdaPin"
+                            x-model="settings.sdaPin"
+                            placeholder="Enter SDA pin"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'sdaPin'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+
+                    <div>
+                        <label for="sclPin" class="block text-left text-lg mt-4"
+                            >SCL Pin</label
+                        >
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="sclPin"
+                            x-model="settings.sclPin"
+                            placeholder="Enter SCL pin"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'sclPin'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+
+                    <div>
+                        <label
+                            for="displayOffset"
+                            class="block text-left text-lg mt-4"
+                            >Display Offset</label
+                        >
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="displayOffset"
+                            x-model="settings.displayOffset"
+                            placeholder="Enter display offset"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'displayOffset'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+
+                    <div>
+                        <label
+                            for="stepsPerRot"
+                            class="block text-left text-lg mt-4"
+                            >Steps Per Rotation</label
+                        >
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="stepsPerRot"
+                            x-model="settings.stepsPerRot"
+                            placeholder="Enter steps per rotation"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'stepsPerRot'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+
+                    <div>
+                        <label for="maxVel" class="block text-left text-lg mt-4"
+                            >Max Velocity</label
+                        >
+                        <input
+                            class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                            type="number"
+                            id="maxVel"
+                            step="0.1"
+                            x-model="settings.maxVel"
+                            placeholder="Enter max velocity"
+                        />
+                        <div
+                            class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                            x-cloak
+                            x-show="errors.key === 'maxVel'"
+                            x-text="errors.message"
+                        ></div>
+                    </div>
+                </div>
+
+                <button
+                    class="w-full p-3 mt-4 text-lg font-semibold text-white bg-red-600 rounded-md hover:bg-red-500 transition-colors"
+                    x-on:click.prevent="reset()"
+                    :disabled="processing"
+                    :class="{'opacity-50 cursor-not-allowed': processing}"
+                >
+                    Reset to Defaults
+                </button>
+
+                <div class="w-full mt-4" x-data="{ showDebug: false }">
+                    <a
+                        href="#"
+                        class="w-full p-3 text-xs font-semibold text-white bg-neutral-600 rounded-md hover:bg-neutral-500 transition-colors flex justify-between items-center"
+                        x-on:click.prevent="showDebug = !showDebug"
+                    >
+                        <span class="flex-1 text-left">Debugging Info</span>
+                        <span
+                            class="flex-none"
+                            x-text="showDebug ? '▲' : '▼'"
+                        ></span>
+                    </a>
+                    <div x-show="showDebug" class="mt-2">
+                        <pre
                             class="w-full p-3 text-sm bg-neutral-700 text-gray-100 rounded-md overflow-auto text-left"
                             x-text="JSON.stringify(settings, null, 2)"
-                    ></pre>
+                        ></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between w-full my-6">
+                <a
+                    href="index.html"
+                    class="p-3 w-1/3 text-lg font-semibold text-white transition-colors"
+                >
+                    Back
+                </a>
+
+                <button
+                    class="w-2/3 p-3 text-lg font-semibold text-white bg-green-600 rounded-md hover:bg-green-500 transition-colors"
+                    x-on:click.prevent="save()"
+                    disabled
+                    :disabled="processing"
+                    :class="{'opacity-50 cursor-not-allowed': processing}"
+                >
+                    Save Settings
+                </button>
             </div>
         </div>
-    </div>
+        <div
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 text-white rounded-md transition duration-300"
+            :class="{'bg-green-600': dialog.type === 'success', 'bg-red-600': dialog.type === 'error'}"
+            x-show="dialog.show"
+            x-text="dialog.message"
+            x-cloak
+        ></div>
 
-    <div class="flex items-center justify-between w-full my-6">
-        <a href="index.html"
-           class="p-3 w-1/3 text-lg font-semibold text-white transition-colors">
-            Back
-        </a>
-
-        <button
-                class="w-2/3 p-3 text-lg font-semibold text-white bg-green-600 rounded-md hover:bg-green-500 transition-colors"
-                x-on:click.prevent="save()"
-                disabled
-                :disabled="processing"
-                :class="{'opacity-50 cursor-not-allowed': processing}"
+        <!-- Help Modal -->
+        <div
+            x-data="helpModal"
+            x-show="visible"
+            @open-help.window="open($event.detail)"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur bg-black/50 shadow-[0_0_30px_10px_#222]"
         >
-            Save Settings
-        </button>
-    </div>
-
-</div>
-<div
-        class="fixed top-4 left-1/2 transform -translate-x-1/2 p-4 text-white rounded-md transition duration-300"
-        :class="{'bg-green-600': dialog.type === 'success', 'bg-red-600': dialog.type === 'error'}"
-        x-show="dialog.show"
-        x-text="dialog.message"
-        x-cloak
-></div>
-</body>
+            <div
+                class="bg-neutral-800 text-white rounded-lg shadow-lg p-6 max-w-md w-full relative"
+                @click.outside="close()"
+            >
+                <h2 class="text-xl font-bold mb-4" x-text="title"></h2>
+                <div
+                    class="text-sm leading-relaxed space-y-1"
+                    x-html="content"
+                ></div>
+                <button
+                    class="absolute top-2 right-2 text-gray-400 hover:text-white"
+                    @click="close()"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </body>
 </html>

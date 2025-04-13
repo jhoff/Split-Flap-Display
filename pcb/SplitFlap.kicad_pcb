@@ -5817,7 +5817,7 @@
 		(layer "Edge.Cuts")
 		(uuid "c9324e31-e7a6-4a9b-8d4d-c4f6120fa6d6")
 	)
-	(gr_text "SplitFlap v1"
+	(gr_text "SplitFlap v2"
 		(at 146 62 0)
 		(layer "F.SilkS")
 		(uuid "7dde0de9-ca52-4982-a1af-4ebd32993e26")

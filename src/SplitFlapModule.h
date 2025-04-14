@@ -8,7 +8,14 @@ class SplitFlapModule {
     // Constructor declarationS
     SplitFlapModule(); // default constructor required to allocate memory for
     // SplitFlapDisplay class
-    SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charSetSize);
+    SplitFlapModule(
+        uint8_t I2Caddress,
+        int stepsPerFullRotation,
+        int stepOffset,
+        int magnetPos,
+        int charsetSize,
+        const char* customCharset = nullptr
+    );
 
     void init();
 
@@ -46,9 +53,13 @@ class SplitFlapModule {
     int charPositions[48];          // support up to 48 characters
     int numChars;                   // current number of characters
     int charSetSize;
+    char customCharsetPersistent[49] = {0};
+    bool usingCustomChars = false;
+    char customChars[49];
 
     static const char StandardChars[37];
     static const char ExtendedChars[48];
+
 };
 
 // //PINs on the PCF8575 Board

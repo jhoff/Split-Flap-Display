@@ -7,8 +7,8 @@ const char SplitFlapModule::StandardChars[37] = {' ', 'A', 'B', 'C', 'D', 'E', '
                                                  'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 const char SplitFlapModule::ExtendedChars[48] = {
-    ' ', 'A', 'B', 'C', 'D', 'E',  'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U',  'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
+    ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
     '5', '6', '7', '8', '9', '\'', ':', '?', '!', '.', '-', '/', '$', '@', '#', '%',
 };
 
@@ -16,19 +16,51 @@ bool hasErrored = false;
 
 // Default Constructor
 SplitFlapModule::SplitFlapModule()
-    : address(0), position(0), stepNumber(0), stepsPerRot(0), chars(StandardChars), numChars(37), charSetSize(37) {
+    : SplitFlapModule(0x20, 2048, 0, 710, 37, nullptr) {
     magnetPosition = 710;
 }
 
 // Constructor implementation
 SplitFlapModule::SplitFlapModule(
-    uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize
-)
-    : address(I2Caddress), position(0), stepNumber(0), stepsPerRot(stepsPerFullRotation), charSetSize(charsetSize) {
+    uint8_t I2Caddress,
+    int stepsPerFullRotation,
+    int stepOffset,
+    int magnetPos,
+    int charsetSize,
+    const char* customCharset
+) : address(I2Caddress),
+    position(0),
+    stepNumber(0),
+    stepsPerRot(stepsPerFullRotation),
+    charSetSize(charsetSize) {
+
     magnetPosition = magnetPos + stepOffset;
 
-    chars = (charsetSize == 48) ? ExtendedChars : StandardChars;
-    numChars = (charsetSize == 48) ? 48 : 37;
+    if (customCharset != nullptr && strlen(customCharset) == charsetSize) {
+        usingCustomChars = true;
+        numChars = charsetSize;
+
+        // Copy safely and log
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = customCharset[i];
+            Serial.print("[");
+            Serial.print(i);
+            Serial.print(": '");
+            Serial.print(customChars[i]);
+            Serial.print("' (");
+            Serial.print((int)customChars[i]);
+            Serial.println(")]");
+        }
+        customChars[numChars] = '\0'; // null-terminate
+        chars = customChars;
+
+        Serial.println("Custom chars assigned.");
+        Serial.println(chars);
+    } else {
+        usingCustomChars = false;
+        chars = (charsetSize == 48) ? ExtendedChars : StandardChars;
+        numChars = (charsetSize == 48) ? 48 : 37;
+    }
 }
 
 void SplitFlapModule::writeIO(uint16_t data) {
@@ -82,13 +114,24 @@ void SplitFlapModule::init() {
 }
 
 int SplitFlapModule::getCharPosition(char inputChar) {
-    inputChar = toupper(inputChar);
+    if (!usingCustomChars) {
+        inputChar = toupper(inputChar);
+    }
+
     for (int i = 0; i < charSetSize; i++) {
+
+    Serial.print("TEST:'");
+    Serial.println(chars[i]);
         if (chars[i] == inputChar) {
             return charPositions[i];
         }
     }
-    return 0; // Character not found, return blank
+
+    Serial.print("Character not found: '");
+    Serial.print(inputChar);
+    Serial.println("' — returning 0");
+
+    return 0; // fallback: space
 }
 
 void SplitFlapModule::stop() {

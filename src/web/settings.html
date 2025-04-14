@@ -482,6 +482,42 @@
                         <option value="48">Extended (48)</option>
                     </select>
                 </div>
+
+                <div class="col-span-2">
+                    <label
+                        for="customCharset"
+                        class="block text-left text-lg mt-4"
+                    >
+                        Custom Character Set
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="customCharset"
+                            type="text"
+                            x-model="settings.custom_charset"
+                            class="w-full p-3 pr-16 text-lg border rounded-md text-center bg-neutral-700 text-gray-100"
+                            :class="{
+                'border-gray-600': settings.custom_charset.length !== settings.charset,
+                'border-green-500': settings.custom_charset.length === settings.charset
+            }"
+                            placeholder="e.g. ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                        />
+                        <span
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm"
+                            :class="{
+                'text-gray-400': settings.custom_charset.length !== settings.charset,
+                'text-green-500': settings.custom_charset.length === settings.charset
+            }"
+                            x-text="`${settings.custom_charset.length}/${settings.charset}`"
+                        ></span>
+                    </div>
+                    <div
+                        class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                        x-cloak
+                        x-show="errors.key === 'custom_charset'"
+                        x-text="errors.message"
+                    ></div>
+                </div>
             </div>
 
             <label class="block text-left text-lg mt-4">

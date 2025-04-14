@@ -13,6 +13,17 @@ void SplitFlapDisplay::init() {
     magnetPosition = settings.getInt("magnetPosition");
     maxVel = settings.getFloat("maxVel");
     charSetSize = settings.getInt("charset");
+    String customCharsetString = settings.getString("custom_charset");
+    const char* customCharsetPtr = nullptr;
+
+    memset(customCharsetPersistent, 0, sizeof(customCharsetPersistent));
+    if (customCharsetString.length() == charSetSize) {
+        for (int i = 0; i < charSetSize; i++) {
+            customCharsetPersistent[i] = customCharsetString[i];
+        }
+        customCharsetPersistent[charSetSize] = '\0';
+        customCharsetPtr = customCharsetPersistent;
+    }
 
     std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
     for (int i = 0; i < numModules; i++) {
@@ -31,9 +42,29 @@ void SplitFlapDisplay::init() {
     }
     Serial.println();
 
+
+
     for (uint8_t i = 0; i < numModules; i++) {
+        const char* customCharsetPtr = nullptr;
+
+        static char moduleCharset[MAX_MODULES][49];
+        memset(moduleCharset[i], 0, sizeof(moduleCharset[i]));
+
+        if (customCharsetString.length() == charSetSize) {
+            for (int c = 0; c < charSetSize; c++) {
+                moduleCharset[i][c] = customCharsetString[c];
+            }
+            moduleCharset[i][charSetSize] = '\0';
+            customCharsetPtr = moduleCharset[i];
+        }
+
         modules[i] = SplitFlapModule(
-            moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition, charSetSize
+            moduleAddresses[i],
+            stepsPerRot,
+            moduleOffsets[i] + displayOffset,
+            magnetPosition,
+            charSetSize,
+            customCharsetPtr
         );
     }
 

@@ -29,8 +29,30 @@
         <div
             class="flex flex-col items-center justify-center bg-neutral-800 shadow-[0_0_30px_10px_#222] p-6 m-6 rounded-lg max-w-lg w-11/12 text-center"
         >
+            <a
+                href="index.html"
+                class="text-gray-400 hover:text-amber-600 transition-colors self-end"
+                title="Back to Home"
+            >
+                <!-- Heroicon: X Mark -->
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                    />
+                </svg>
+            </a>
+
             <h2
-                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mb-4"
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mb-4 relative flex justify-between"
             >
                 General Settings
             </h2>
@@ -168,8 +190,8 @@
                 </ul>
                 <p class='mt-2 text-xs italic text-gray-400'>
                     Tokens are case-sensitive. You can mix with literal text,
-                    like <code>{ddd} {dd}-{mm}</code> → “Mon 08-04”.
-                    You can also mix date and time tokens but you have to select the corresponding mode
+                    like <code>{ddd}{dd}-{mm}</code> → “Mon08-04”.
+                    You can also mix date and time tokens but you have to select the corresponding mode from the dropdown.
                 </p>
             `
         })"
@@ -262,19 +284,62 @@
             ></div>
 
             <h2
-                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2"
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2 flex justify-between"
             >
                 MQTT Settings
+                <button
+                    type="button"
+                    class="ml-1 text-sm text-gray-400 hover:text-white cursor-pointer transition-colors"
+                    @click="$dispatch('open-help', {
+        title: 'Home Assistant MQTT Help',
+        content: `
+            <p><strong>Home Assistant Integration:</strong></p>
+            <ul class='list-disc list-inside pl-2'>
+                <li>Make sure MQTT is enabled in Home Assistant and a broker (like Mosquitto) is installed and running.</li>
+                <li>Use your Home Assistant MQTT broker settings for <strong>Server</strong>, <strong>Port</strong>, <strong>Username</strong>, and <strong>Password</strong>.</li>
+                <li>After saving settings, the display will automatically connect and publish state to the MQTT topic you’ve configured.</li>
+            </ul>
+
+            <p class='mt-2'><strong>Auto-Discovery:</strong></p>
+            <ul class='list-disc list-inside pl-2'>
+                <li>This device supports Home Assistant MQTT auto-discovery.</li>
+                <li>Entities will appear automatically under <em>Settings → Devices & Services → MQTT</em>.</li>
+                <li>If you change the display name or topic, entities may be re-created with new IDs in Home Assistant.</li>
+            </ul>
+
+            <p class='mt-2 text-xs italic text-gray-400'>
+                If entities don't appear, restart Home Assistant or verify the MQTT integration is correctly configured with discovery enabled.
+            </p>
+        `
+    })"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-6"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                        />
+                    </svg>
+                </button>
             </h2>
 
             <div class="gap-2 grid grid-cols-2">
                 <div>
                     <label class="block text-left text-lg mt-4"
+                           for="mqtt_server"
                         >MQTT Server</label
                     >
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
+                        id="mqtt_server"
                         x-model="settings.mqtt_server"
                         placeholder="e.g. 192.168.1.10"
                     />
@@ -282,11 +347,13 @@
 
                 <div>
                     <label class="block text-left text-lg mt-4"
+                           for="mqtt_port"
                         >MQTT Port</label
                     >
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="number"
+                        id="mqtt_port"
                         x-model="settings.mqtt_port"
                         placeholder="1883"
                     />
@@ -295,23 +362,27 @@
 
             <div class="gap-2 grid grid-cols-2">
                 <div>
-                    <label class="block text-left text-lg mt-4">
+                    <label class="block text-left text-lg mt-4"
+                    for="mqtt_user">
                         MQTT Username
                     </label>
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
+                        id="mqtt_user"
                         x-model="settings.mqtt_user"
                         placeholder="optional"
                     />
                 </div>
                 <div>
-                    <label class="block text-left text-lg mt-4">
+                    <label class="block text-left text-lg mt-4"
+                           for="mqtt_pass">
                         MQTT Password
                     </label>
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="password"
+                        id="mqtt_pass"
                         x-model="settings.mqtt_pass"
                         placeholder="optional"
                     />
@@ -319,9 +390,52 @@
             </div>
 
             <h2
-                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2"
+                class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2 flex justify-between"
             >
                 Hardware Settings
+
+                <button
+                    type="button"
+                    class="ml-1 text-sm text-gray-400 hover:text-white cursor-pointer transition-colors"
+                    @click="$dispatch('open-help', {
+        title: 'Hardware Settings Help',
+        content: `
+            <ul class='list-disc list-inside pl-2'>
+                <li><strong>Number of modules:</strong> How many split-flap modules are connected.</li>
+                <li><strong>Character Set:</strong> 37 = standard (A-Z0-9), 48 = extended (includes symbols).</li>
+                <li><strong>Addresses:</strong> I²C address for each module. Typically starts at 32 and increases per module.</li>
+                <li><strong>Offsets:</strong> Fine-tune each module’s zero position if flaps are misaligned.</li>
+            </ul>
+
+            <p class='mt-2'><strong>Advanced Settings:</strong></p>
+            <ul class='list-disc list-inside pl-2'>
+                <li><strong>Magnet Position:</strong> Step where the home sensor is triggered. Usually 730 (37) or 615 (48).</li>
+                 <li><strong>SDA / SCL Pin:</strong> GPIO pins on the Esp32 used for I²C communication to modules.</li>
+                <li><strong>Steps Per Rotation:</strong> Total steps to rotate one full cycle across all flaps.</li>
+                <li><strong>Max Velocity:</strong> Controls how fast the motor moves (too high may skip steps).</li>
+            </ul>
+
+            <p class='mt-2 text-xs italic text-gray-400'>
+                For the Advanced Settings you should be able to go with the defaults unless you're building custom hardware.
+            </p>
+        `
+    })"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-6"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                        />
+                    </svg>
+                </button>
             </h2>
 
             <div class="gap-2 grid grid-cols-2 w-full">
@@ -356,6 +470,13 @@
                         class="w-full p-3.5 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-white"
                         x-model.number="settings.charset"
                         id="charset"
+                        @change="
+                            if (settings.charset === 37) {
+                                settings.magnetPosition = 730;
+                            } else if (settings.charset === 48) {
+                                settings.magnetPosition = 615;
+                            }
+                        "
                     >
                         <option value="37">Standard (37)</option>
                         <option value="48">Extended (48)</option>
@@ -573,7 +694,7 @@
             <div class="flex items-center justify-between w-full my-6">
                 <a
                     href="index.html"
-                    class="p-3 w-1/3 text-lg font-semibold text-white transition-colors"
+                    class="p-3 w-1/3 text-lg font-semibold text-white hover:text-amber-600 transition-colors"
                 >
                     Back
                 </a>

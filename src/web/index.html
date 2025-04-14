@@ -34,7 +34,7 @@
             <label class="block text-left text-lg mb-4">Select Mode:</label>
             <select
                 class="w-full p-3 mb-6 text-lg border border-neutral-600 rounded-md text-center bg-neutral-700 text-white"
-                x-model="settings.mode"
+                x-model.number="settings.mode"
             >
                 <option value="2">Date</option>
                 <option value="3">Time</option>
@@ -166,14 +166,14 @@
 
             <button
                 class="w-full p-3 mt-6 text-lg font-semibold text-white bg-green-600 rounded-md hover:bg-green-500 transition-colors"
-                x-on:click="updateDisplay"
+                x-on:click="() => setTimeout(() => updateDisplay(), 0)"
             >
                 Update Display
             </button>
 
             <a
                 href="settings.html"
-                class="p-3 mt-4 text-lg font-semibold text-white hover:text-blue text-center block"
+                class="p-3 mt-4 text-lg font-semibold text-white hover:text-amber-600 text-center block transition-colors"
                 >Settings</a
             >
         </div>

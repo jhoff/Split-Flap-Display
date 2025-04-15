@@ -148,8 +148,10 @@
 
             <div class="grid grid-cols-2 gap-2 w-full">
                 <div>
-                    <label class="flex text-lg mt-4 justify-between"
-                    for="date_format">
+                    <label
+                        class="flex text-lg mt-4 justify-between"
+                        for="date_format"
+                    >
                         Date Format
                     </label>
                     <input
@@ -161,8 +163,9 @@
                     />
                 </div>
                 <div>
-                    <label class="flex text-lg mt-4 justify-between"
-                           for="time_format"
+                    <label
+                        class="flex text-lg mt-4 justify-between"
+                        for="time_format"
                         >Time Format
                         <button
                             type="button"
@@ -270,22 +273,60 @@
                 </div>
             </div>
 
-            <label for="otaPass" class="block text-left text-lg mt-4">
-                OTA Password
-            </label>
-            <input
-                class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
-                type="password"
-                id="otaPass"
-                x-model="settings.otaPass"
-                placeholder="Enter OTA Password"
-            />
-            <div
-                class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
-                x-cloak
-                x-show="errors.key === 'otaPass'"
-                x-text="errors.message"
-            ></div>
+            <div class="relative w-full">
+                <label for="otaPass" class="block text-lg mt-4">
+                    OTA Password
+                    <button
+                        type="button"
+                        class="ml-1 text-sm absolute right-0 text-gray-400 hover:text-white cursor-pointer transition-colors"
+                        @click="$dispatch('open-help', {
+                            title: 'OTA Password Help',
+                            content: `
+                                <p><strong>What is OTA?</strong></p>
+                                <p>OTA (Over-the-Air) allows you to wirelessly upload new firmware or filesystem updates to your Split Flap Display.</p>
+
+                                <p class='mt-2'><strong>What is the OTA Password?</strong></p>
+                                <p>This password secures your device by requiring authentication before accepting any OTA updates. Without it, anyone on the same network could potentially push firmware to your device.</p>
+
+                                <p class='mt-2'><strong>How to Use:</strong></p>
+                                <ul class='list-disc list-inside pl-2'>
+                                    <li>Set a password in the <code>OTA Password</code> field.</li>
+                                    <li>Add the password to your <code>platformio.ini</code> as the <code>--auth</code> flag for OTA uploads.</li>
+                                    <li>Use the appropriate OTA environment (e.g. <code>esp32_s3_ota</code>) when uploading firmware or filesystem updates.</li>
+                                </ul>
+                            `
+                        })"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="size-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                            />
+                        </svg>
+                    </button>
+                </label>
+                <input
+                    class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
+                    type="password"
+                    id="otaPass"
+                    x-model="settings.otaPass"
+                    placeholder="Enter OTA Password"
+                />
+                <div
+                    class="w-full p-3 mt-2 text-sm text-white bg-red-700 rounded-md"
+                    x-cloak
+                    x-show="errors.key === 'otaPass'"
+                    x-text="errors.message"
+                ></div>
+            </div>
 
             <h2
                 class="text-xl font-semibold text-left w-full border-b border-gray-600 pb-2 mt-10 mb-2 flex justify-between"

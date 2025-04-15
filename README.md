@@ -1,15 +1,21 @@
 # Split Flap Display Firmware
 
+![format badge](https://github.com/jhoff/Split-Flap-Display/actions/workflows/format-check.yml/badge.svg?branch=main)
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/RCvks4XXXH?style=flat)](https://discord.gg/RCvks4XXXH)
+
+Looking for support? Find help on discord ☝️
+
 Firmware for the modular Split Flap Display created by [Morgan Manly](https://github.com/ManlyMorgan/Split-Flap-Display)
 
-- [Instructables](https://www.instructables.com/Split-Flap-Display-3D-Printed-Modular-Compact-Encl/) ( original )
-- [Print Files](https://makerworld.com/en/models/1116618#profileId-1114192) ( original )
+- [Instructables](https://www.instructables.com/Split-Flap-Display-3D-Printed-Modular-Compact-Encl/) ( Original )
+- [Print Files](https://makerworld.com/en/models/1116618#profileId-1114192) ( Original, 37 characters version )
+- [Print Files](https://makerworld.com/en/models/1296793-split-flap-display-extended-charset-48-flaps#profileId-1328346) ( Extended, 48 characters version )
 - [Original firmware](https://github.com/ManlyMorgan/Split-Flap-Display)
 
 ## Features
 
-- Fully 3D Printed Modular Split Flap Display with 37 Characters Per Module
-- Small Size, 8 Modules are 320mm, 3 Modules are 130mm Wide. 80mm Tall
+- Fully 3D Printed Modular Split Flap Display with 37 or 48 Characters Per Module
+- Small Size, 8 Modules are 320mm, 3 Modules are 130mm Wide. 80mm tall (original version) or 94mm (extended version) tall
 - Fully configurable and controllable via Web Interface
     - Switch Between Operation Modes, modes include custom input, date mode, and time mode
     - Configure WiFi, Timezone, and hardware settings

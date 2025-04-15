@@ -521,9 +521,5 @@ String SplitFlapWebServer::decodeURIComponent(String encodedString) {
     decodedString.replace("%7D", "}");  // right brace
     decodedString.replace("%7E", "~");  // tilde
 
-    // Handle percent-encoded values for characters beyond basic ASCII (e.g.,
-    // extended Unicode)
-    decodedString.replace("%", "");
-
     return decodedString;
 }

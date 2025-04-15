@@ -369,7 +369,13 @@ void SplitFlapWebServer::startWebServer() {
 
         if (json["otaPass"].is<String>() && json["otaPass"].as<String>() != settings.getString("otaPass")) {
             rebootRequired = true; // OTA password change can only be applied by rebooting
-            response["message"] = "Settings updated successfully, OTA Password has changed. Rebooting...";
+        }
+
+        if ((json["moduleCount"].is<int>() && json["moduleCount"].as<int>() != settings.getInt("moduleCount")) ||
+            (json["charset"].is<int>() && json["charset"].as<int>() != settings.getInt("charset")) ||
+            (json["custom_charset"].is<String>() &&
+             json["custom_charset"].as<String>() != settings.getString("custom_charset"))) {
+            rebootRequired = true;
         }
 
         if (json["mdns"].is<String>() && json["mdns"].as<String>() != settings.getString("mdns")) {
@@ -395,6 +401,10 @@ void SplitFlapWebServer::startWebServer() {
             response["errors"]["key"] = settings.getLastValidationKey();
             response["errors"]["message"] = settings.getLastValidationError();
             return request->send(400, "application/json", response.as<String>());
+        }
+
+        if (rebootRequired) {
+            response["message"] = "Settings updated successfully, Rebooting...";
         }
 
         response["type"] = "success";

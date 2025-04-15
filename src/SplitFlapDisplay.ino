@@ -40,7 +40,7 @@ JsonSettings settings = JsonSettings("config", {
     {"stepsPerRot", JsonSetting(2048)},
     {"maxVel", JsonSetting(15.0f)},
     {"charset", JsonSetting(48)},
-    {"custom_charset", JsonSetting("")},
+    {"custom_charset", JsonSetting(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':?!.-/@$#%")},
     // Operational States
     {"mode", JsonSetting(0)}
 });

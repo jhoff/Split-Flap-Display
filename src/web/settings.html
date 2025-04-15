@@ -148,18 +148,21 @@
 
             <div class="grid grid-cols-2 gap-2 w-full">
                 <div>
-                    <label class="flex text-lg mt-4 justify-between">
+                    <label class="flex text-lg mt-4 justify-between"
+                    for="date_format">
                         Date Format
                     </label>
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
+                        id="date_format"
                         x-model="settings.dateFormat"
                         placeholder="e.g. {dd}-{mm}-{yy}"
                     />
                 </div>
                 <div>
                     <label class="flex text-lg mt-4 justify-between"
+                           for="time_format"
                         >Time Format
                         <button
                             type="button"
@@ -215,6 +218,7 @@
                     <input
                         class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
                         type="text"
+                        id="time_format"
                         x-model="settings.timeFormat"
                         placeholder="e.g. {HH}:{mm}"
                     />
@@ -267,7 +271,7 @@
             </div>
 
             <label for="otaPass" class="block text-left text-lg mt-4">
-                OTA Password (will restart)
+                OTA Password
             </label>
             <input
                 class="w-full p-3 mt-2 text-lg border border-gray-600 rounded-md text-center bg-neutral-700 text-gray-100"
@@ -400,7 +404,8 @@
         content: `
             <ul class='list-disc list-inside pl-2'>
                 <li><strong>Number of modules:</strong> How many split-flap modules are connected.</li>
-                <li><strong>Character Set:</strong> 37 = standard (A-Z0-9), 48 = extended (includes symbols).</li>
+                <li><strong>Character Set:</strong> 37 = standard (A-Z 0-9), 48 = extended (includes symbols).</li>
+                <li><strong>Customise Characters:</strong> Specify your custom characters and symbols.</li>
                 <li><strong>Addresses:</strong> I²C address for each module. Typically starts at 32 and increases per module.</li>
                 <li><strong>Offsets:</strong> Fine-tune each module’s zero position if flaps are misaligned.</li>
             </ul>
@@ -486,7 +491,7 @@
                         for="customCharset"
                         class="block text-left text-lg mt-4"
                     >
-                        Custom Character Set
+                        Customise Characters
                     </label>
                     <div class="relative">
                         <input
@@ -495,15 +500,15 @@
                             x-model="settings.custom_charset"
                             class="w-full p-3 pr-16 text-lg border rounded-md text-center bg-neutral-700 text-gray-100"
                             :class="{
-                'border-gray-600': settings.custom_charset.length !== settings.charset,
+                'border-red-600': settings.custom_charset.length !== settings.charset,
                 'border-green-500': settings.custom_charset.length === settings.charset
             }"
-                            placeholder="e.g. ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                            placeholder=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':?!.-/@$#%"
                         />
                         <span
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm"
                             :class="{
-                'text-gray-400': settings.custom_charset.length !== settings.charset,
+                'text-red-600': settings.custom_charset.length !== settings.charset,
                 'text-green-500': settings.custom_charset.length === settings.charset
             }"
                             x-text="`${settings.custom_charset.length}/${settings.charset}`"

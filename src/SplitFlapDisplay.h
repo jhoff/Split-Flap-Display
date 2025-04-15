@@ -57,7 +57,5 @@ class SplitFlapDisplay {
     int SDAPin;         // SDA pin
     int SCLPin;         // SCL pin
 
-    char customCharsetPersistent[49];
-
     SplitFlapMqtt *mqtt = nullptr;
 };

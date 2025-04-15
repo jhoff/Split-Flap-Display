@@ -27,21 +27,31 @@ SplitFlapModule::SplitFlapModule(
     : address(I2Caddress), position(0), stepNumber(0), stepsPerRot(stepsPerFullRotation) {
     magnetPosition = magnetPos + stepOffset;
 
-    charSetSize = charsetStr.length();
-    numChars = charSetSize;
+    int len = charsetStr.length();
 
-    if (charSetSize > 48) charSetSize = numChars = 48;
-
-    usingCustomChars = true;
-    for (int i = 0; i < numChars; i++) {
-        customChars[i] = charsetStr[i];
-    }
-    customChars[numChars] = '\0';
-    chars = customChars;
-
-    Serial.println("Assigned custom charset:");
-    for (int i = 0; i < numChars; i++) {
-        Serial.printf(" [%d] '%c' (%d)\n", i, chars[i], chars[i]);
+    if (len < 37) {
+        // Use StandardChars as fallback
+        Serial.println("Fallback StandardChars");
+        charSetSize = numChars = 37;
+        usingCustomChars = false;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = StandardChars[i];
+        }
+    } else if (len >= 37) {
+        // Use custom charset, but truncate to either 37 or 48
+        usingCustomChars = true;
+        charSetSize = numChars = (len >= 48) ? 48 : 37;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = charsetStr[i];
+        }
+        customChars[numChars] = '\0';
+    } else {
+        // Fallback if empty
+        charSetSize = numChars = 37;
+        usingCustomChars = false;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = StandardChars[i];
+        }
     }
 }
 
@@ -96,26 +106,13 @@ void SplitFlapModule::init() {
 }
 
 int SplitFlapModule::getCharPosition(char inputChar) {
-    if (! usingCustomChars) {
-        inputChar = toupper(inputChar);
-    }
-
-    Serial.printf("Charset size: %d\n", charSetSize);
+    inputChar = toupper(inputChar);
 
     for (int i = 0; i < charSetSize; i++) {
-        Serial.printf("Char[%d]: '%c' (ASCII %d)\n", i, chars[i], chars[i]);
-
-        Serial.print("TEST:'");
-        Serial.println(chars[i]);
-
-        if (chars[i] == inputChar) {
+        if (customChars[i] == inputChar) {
             return charPositions[i];
         }
     }
-
-    Serial.print("Character not found: '");
-    Serial.print(inputChar);
-    Serial.println("' — returning 0");
 
     return 0; // fallback
 }

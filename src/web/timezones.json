@@ -19,6 +19,7 @@
     "Eastern US / Colombia (GMT-5)": "EST5EDT,M3.2.0/2,M11.1.0/2",
     "Central US / Mexico City (GMT-6)": "CST6CDT,M3.2.0/2,M11.1.0/2",
     "Mountain US / Canada (GMT-7)": "MST7MDT,M3.2.0/2,M11.1.0/2",
+    "Phoenix / US (GMT-7)": "MST7",
     "Pacific US / Canada (GMT-8)": "PST8PDT,M3.2.0/2,M11.1.0/2",
     "Alaska (GMT-9)": "AKST9AKDT,M3.2.0/2,M11.1.0/2",
     "Hawaii / Tahiti (GMT-10)": "HST10",

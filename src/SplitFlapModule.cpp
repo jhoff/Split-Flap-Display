@@ -15,20 +15,44 @@ const char SplitFlapModule::ExtendedChars[48] = {
 bool hasErrored = false;
 
 // Default Constructor
-SplitFlapModule::SplitFlapModule()
-    : address(0), position(0), stepNumber(0), stepsPerRot(0), chars(StandardChars), numChars(37), charSetSize(37) {
+SplitFlapModule::SplitFlapModule() : SplitFlapModule(0x20, 2048, 0, 710, 37, String()) {
     magnetPosition = 710;
 }
 
 // Constructor implementation
 SplitFlapModule::SplitFlapModule(
-    uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize
+    uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize,
+    const String &charsetStr
 )
-    : address(I2Caddress), position(0), stepNumber(0), stepsPerRot(stepsPerFullRotation), charSetSize(charsetSize) {
+    : address(I2Caddress), position(0), stepNumber(0), stepsPerRot(stepsPerFullRotation) {
     magnetPosition = magnetPos + stepOffset;
 
-    chars = (charsetSize == 48) ? ExtendedChars : StandardChars;
-    numChars = (charsetSize == 48) ? 48 : 37;
+    int len = charsetStr.length();
+
+    if (len < 37) {
+        // Use StandardChars as fallback
+        Serial.println("Fallback StandardChars");
+        charSetSize = numChars = 37;
+        usingCustomChars = false;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = StandardChars[i];
+        }
+    } else if (len >= 37) {
+        // Use custom charset, but truncate to either 37 or 48
+        usingCustomChars = true;
+        charSetSize = numChars = (len >= 48) ? 48 : 37;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = charsetStr[i];
+        }
+        customChars[numChars] = '\0';
+    } else {
+        // Fallback if empty
+        charSetSize = numChars = 37;
+        usingCustomChars = false;
+        for (int i = 0; i < numChars; i++) {
+            customChars[i] = StandardChars[i];
+        }
+    }
 }
 
 void SplitFlapModule::writeIO(uint16_t data) {
@@ -83,12 +107,14 @@ void SplitFlapModule::init() {
 
 int SplitFlapModule::getCharPosition(char inputChar) {
     inputChar = toupper(inputChar);
+
     for (int i = 0; i < charSetSize; i++) {
-        if (chars[i] == inputChar) {
+        if (customChars[i] == inputChar) {
             return charPositions[i];
         }
     }
-    return 0; // Character not found, return blank
+
+    return 0; // fallback
 }
 
 void SplitFlapModule::stop() {

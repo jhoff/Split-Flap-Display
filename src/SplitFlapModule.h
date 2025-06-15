@@ -8,7 +8,10 @@ class SplitFlapModule {
     // Constructor declarationS
     SplitFlapModule(); // default constructor required to allocate memory for
     // SplitFlapDisplay class
-    SplitFlapModule(uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charSetSize);
+    SplitFlapModule(
+        uint8_t I2Caddress, int stepsPerFullRotation, int stepOffset, int magnetPos, int charsetSize,
+        const String &charset
+    );
 
     void init();
 
@@ -42,10 +45,11 @@ class SplitFlapModule {
     static const int motorPins[];   // Array of motor pins
     static const int HallEffectPIN; // Hall Effect Sensor Pin (On PCF8575)
 
-    const char *chars;              // pointer to active character set
     int charPositions[48];          // support up to 48 characters
     int numChars;                   // current number of characters
     int charSetSize;
+    bool usingCustomChars = false;
+    char customChars[50];
 
     static const char StandardChars[37];
     static const char ExtendedChars[48];

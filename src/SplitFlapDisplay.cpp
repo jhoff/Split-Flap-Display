@@ -13,6 +13,7 @@ void SplitFlapDisplay::init() {
     magnetPosition = settings.getInt("magnetPosition");
     maxVel = settings.getFloat("maxVel");
     charSetSize = settings.getInt("charset");
+    String customCharsetString = settings.getString("custom_charset");
 
     std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
     for (int i = 0; i < numModules; i++) {
@@ -33,7 +34,12 @@ void SplitFlapDisplay::init() {
 
     for (uint8_t i = 0; i < numModules; i++) {
         modules[i] = SplitFlapModule(
-            moduleAddresses[i], stepsPerRot, moduleOffsets[i] + displayOffset, magnetPosition, charSetSize
+            moduleAddresses[i],
+            stepsPerRot,
+            moduleOffsets[i] + displayOffset,
+            magnetPosition,
+            charSetSize,
+            customCharsetString
         );
     }
 

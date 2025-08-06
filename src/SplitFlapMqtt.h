@@ -13,6 +13,7 @@ class SplitFlapMqtt {
     void setup();
     void loop();                                               // needed for PubSubClient3
     void publishState(const String &message);
+    void setAvailable();                                       // publish availability status
     void setDisplay(SplitFlapDisplay *display);
     bool isConnected();
 
@@ -37,5 +38,6 @@ class SplitFlapMqtt {
     String topic_config_sensor;
 
     unsigned long lastAttempt = 0;
+    unsigned long lastAvailabilityPublish = 0;
     int retryCount = 0;
 };

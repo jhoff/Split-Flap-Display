@@ -81,7 +81,8 @@ void SplitFlapMqtt::connectToMqtt() {
             // clang-format on
 
             mqttClient.subscribe(topic_command.c_str());
-            mqttClient.publish(topic_avail.c_str(), "online", true);
+            setAvailable(); // publish availability status
+
             mqttClient.publish(topic_state.c_str(), "", true);
 
             mqttClient.publish(topic_config_text.c_str(), payload_text.c_str(), true);
@@ -101,8 +102,25 @@ void SplitFlapMqtt::publishState(const String &message) {
     mqttClient.publish(topic_state.c_str(), message.c_str(), true);
 }
 
+void SplitFlapMqtt::setAvailable() {
+    mqttClient.publish(topic_avail.c_str(), "online", true);
+}
+
 void SplitFlapMqtt::loop() {
     mqttClient.loop();
+    // Check if MQTT client is connected, if not try to reconnect
+    if (! mqttClient.connected()) {
+        unsigned long now = millis();
+        if (now - lastAttempt > 5000) { // retry every 5 seconds
+            connectToMqtt();
+            lastAttempt = now;
+        }
+    }
+    // Publish availability status every 60 seconds
+    if (millis() - lastAvailabilityPublish > 60000) {
+        setAvailable();
+        lastAvailabilityPublish = millis();
+    }
 }
 
 bool SplitFlapMqtt::isConnected() {

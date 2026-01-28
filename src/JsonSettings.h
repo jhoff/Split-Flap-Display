@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 #include <map>
+#include <vector>
 
 class JsonSettings {
   public:

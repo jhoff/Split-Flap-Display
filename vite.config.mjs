@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
-import { minify } from "html-minifier-terser";
 import tailwindcss from "@tailwindcss/vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import jsonminify from "jsonminify";
-import fs from "fs";
 import path from "path";
 
 export default defineConfig({
@@ -10,7 +9,12 @@ export default defineConfig({
     build: {
         outDir: "../../build/web",
         assetsDir: ".",
+        emptyOutDir: true,
         rollupOptions: {
+            input: {
+                main: path.resolve(__dirname, "src/web/index.html"),
+                settings: path.resolve(__dirname, "src/web/settings.html"),
+            },
             output: {
                 entryFileNames: `[name].js`,
                 chunkFileNames: `[name].js`,
@@ -20,44 +24,14 @@ export default defineConfig({
     },
     plugins: [
         tailwindcss(),
-        {
-            name: "minify-copy-html-json",
-            closeBundle() {
-                const srcDir = path.resolve(__dirname, "src/web");
-                const destDir = path.resolve(__dirname, "build/web");
-
-                fs.readdirSync(srcDir).forEach((file) => {
-                    const transform = async (file, callback) => {
-                        const filePath = path.join(srcDir, file);
-                        const destPath = path.join(destDir, file);
-
-                        const content = fs.readFileSync(filePath, "utf8");
-                        const modifiedContent = await callback(content);
-
-                        fs.mkdirSync(path.dirname(destPath), {
-                            recursive: true,
-                        });
-                        fs.writeFileSync(destPath, modifiedContent, "utf8");
-                    };
-
-                    if (file.endsWith(".json")) {
-                        transform(file, jsonminify);
-                    }
-
-                    if (file.endsWith(".html")) {
-                        transform(
-                            file,
-                            async (content) =>
-                                await minify(content, {
-                                    collapseWhitespace: true,
-                                    removeComments: true,
-                                    minifyCSS: true,
-                                    minifyJS: true,
-                                }),
-                        );
-                    }
-                });
-            },
-        },
+        viteStaticCopy({
+            targets: [
+                {
+                    src: "timezones.json",
+                    dest: ".",
+                    transform: (content) => jsonminify(content.toString()),
+                },
+            ],
+        }),
     ],
 });

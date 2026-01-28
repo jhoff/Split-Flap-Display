@@ -10,6 +10,9 @@
 #include <LittleFS.h>
 #include <WiFi.h>
 #include <time.h>
+#include <vector>
+
+class SplitFlapDisplay; // Forward declaration
 
 class SplitFlapWebServer {
   public:
@@ -63,12 +66,14 @@ class SplitFlapWebServer {
     int getDateCheckInterval() { return checkDateInterval; }
 
     int getCentering() { return centering; }
+    
+    void setDisplay(SplitFlapDisplay *displayPtr) { display = displayPtr; }
+    void setInputString(String input) { inputString = input; }  // Made public for mode 6
 
   private:
     JsonSettings &settings;
 
     String decodeURIComponent(String encodedString);
-    void setInputString(String input) { inputString = input; }
     void setMultiInputString(String input) { multiInputString = input; }
 
     void setMode(int targetMode);
@@ -93,5 +98,14 @@ class SplitFlapWebServer {
     bool attemptReconnect;
     unsigned long lastCheckWifiTime;
     int wifiCheckInterval;
+
+    // WiFi reconnection tracking
+    unsigned long lastReconnectAttempt = 0;
+    int reconnectAttempts = 0;
+    const int maxReconnectAttempts = 10;
+    bool isReconnecting = false;
+
     AsyncWebServer server; // Declare server as a class member
+    SplitFlapDisplay *display = nullptr; // Pointer to display for offset updates
+    std::vector<String> persistentPaths; // Store path strings to keep them valid
 };

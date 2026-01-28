@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run pio:firmware:*)",
+      "Bash(npm run pio:monitor:*)",
+      "Bash(pio run:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd //c \"tasklist | findstr python\")",
+      "Bash(npm run build:web:*)",
+      "Bash(npm run:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:splitflap.local)",
+      "Bash(curl:*)",
+      "Bash(pio device list:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -5,3 +5,13 @@
 node_modules/
 build/web/*
 .idea
+
+# Local configuration with credentials
+platformio_override.ini
+.env
+secrets.h
+credentials.json
+src/credentials.h
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -6,6 +6,9 @@
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 
+// Forward declaration
+class SplitFlapWebServer;
+
 class SplitFlapMqtt {
   public:
     SplitFlapMqtt(JsonSettings &settings, WiFiClient &client); // updated constructor
@@ -14,7 +17,9 @@ class SplitFlapMqtt {
     void loop();                                               // needed for PubSubClient3
     void publishState(const String &message);
     void setDisplay(SplitFlapDisplay *display);
+    void setWebServer(SplitFlapWebServer *server);
     bool isConnected();
+    void checkConnection();                                    // check and reconnect if needed
 
   private:
     PubSubClient mqttClient; // PubSubClient instead of AsyncMqttClient
@@ -22,6 +27,7 @@ class SplitFlapMqtt {
 
     JsonSettings &settings;
     SplitFlapDisplay *display;
+    SplitFlapWebServer *webServer;
 
     void connectToMqtt();
 
@@ -38,4 +44,13 @@ class SplitFlapMqtt {
 
     unsigned long lastAttempt = 0;
     int retryCount = 0;
+
+    // MQTT reconnection tracking
+    unsigned long lastReconnectAttempt = 0;
+    const unsigned long reconnectInterval = 5000;  // Try reconnecting every 5 seconds
+    bool wasConnected = false;                     // Track previous connection state
+
+    // Message queuing for busy display
+    String pendingMessage = "";
+    bool hasPendingMessage = false;
 };

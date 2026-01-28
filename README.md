@@ -19,8 +19,39 @@ Firmware for the modular Split Flap Display created by [Morgan Manly](https://gi
 - Fully configurable and controllable via Web Interface
     - Switch Between Operation Modes, modes include custom input, date mode, and time mode
     - Configure WiFi, Timezone, and hardware settings
-- MQTT Support
+    - Module calibration interface for precise alignment
+- MQTT Support with automatic reconnection
 - OTA Firmware / Filesystem updating
+
+## Recent Enhancements on this fork
+
+- **Motor Timing Improvements**: Enhanced accuracy and consistency
+    - Fixed timing inconsistencies in motor control loop
+    - Improved sensor polling with fresh timestamps
+    - Reduced I2C error recovery delay (10ms → 2ms)
+    - Added I2C timeout protection (5ms) to prevent hangs
+- **MQTT Reliability**: Improved accuracy when receiving MQTT messages
+    - Busy flag prevents concurrent display operations
+    - Message queuing when display is active
+    - Consistent accuracy across MQTT and multi-word modes
+- **Module Calibration**: Web-based offset adjustment for precise character alignment
+- **I2C Connectivity Testing**: Diagnostic endpoint to verify module communication
+- **Improved Reliability**:
+    - Smart WiFi/MQTT reconnection with exponential backoff
+    - Stepper motor wake-up sequence for consistent performance
+    - Watchdog protection for long-running operations
+    - Enhanced error recovery with I2C communication tracking
+- **Synchronized Landing**: New transition effect where all flaps stop simultaneously
+- **Configurable Module Settings**: Override module addresses and offsets via `platformio_override.ini`
+- **Time & Date Fixes**: Correctly uses user-defined formats and handles NTP sync states
+- **Code Quality**: Named constants, input validation, and comprehensive error logging
+
+See [ENHANCEMENTS.md](ENHANCEMENTS.md) for detailed documentation.
+
+For timing analysis and future improvements, see:
+- [TIMING_ISSUES.md](TIMING_ISSUES.md) - Comprehensive timing analysis
+- [MQTT_ACCURACY_FIX.md](MQTT_ACCURACY_FIX.md) - MQTT reliability improvements
+- [ACCURACY_IMPROVEMENTS.md](ACCURACY_IMPROVEMENTS.md) - Future enhancement roadmap
 
 ## Supported boards
 

@@ -8,47 +8,92 @@
 #include "SplitFlapDisplay.h"
 #include "SplitFlapMqtt.h"
 #include "SplitFlapWebServer.h"
+#include "Defaults.h"
 
 #include <Arduino.h>
 #include <WiFiClient.h>
 
+// Include credentials if file exists (local only, not in git)
+#ifdef __has_include
+#if __has_include("credentials.h")
+#include "credentials.h"
+#define HAS_CREDENTIALS
+#endif
+#endif
+
+// Default credentials (empty - configure via web interface)
+#ifndef MQTT_SERVER
+#define MQTT_SERVER ""
+#endif
+#ifndef MQTT_PORT
+#define MQTT_PORT 1883
+#endif
+#ifndef MQTT_USER
+#define MQTT_USER ""
+#endif
+#ifndef MQTT_PASS
+#define MQTT_PASS ""
+#endif
+#ifndef OTA_PASS
+#define OTA_PASS DEFAULT_OTA_PASS
+#endif
+
 // clang-format off
 JsonSettings settings = JsonSettings("config", {
     // General Settings
-    {"name", JsonSetting("My Display")},
-    {"mdns", JsonSetting("splitflap")},
-    {"otaPass", JsonSetting("")},
-    {"timezone", JsonSetting("UTC0")},
-    {"dateFormat", JsonSetting("{dd}-{mm}-{yy}")},
-    {"timeFormat", JsonSetting("{HH}:{mm}")},
+    {"name", JsonSetting(DEFAULT_NAME)},
+    {"mdns", JsonSetting(DEFAULT_MDNS)},
+    {"otaPass", JsonSetting(OTA_PASS)},
+    {"timezone", JsonSetting(DEFAULT_TIMEZONE)},
+    {"dateFormat", JsonSetting(DEFAULT_DATE_FORMAT)},
+    {"timeFormat", JsonSetting(DEFAULT_TIME_FORMAT)},
     // Wifi Settings
-    {"ssid", JsonSetting("")},
-    {"password", JsonSetting("")},
-    // MQTT Settings
-    {"mqtt_server", JsonSetting("")},
-    {"mqtt_port", JsonSetting(1883)},
-    {"mqtt_user", JsonSetting("")},
-    {"mqtt_pass", JsonSetting("")},
+    {"ssid", JsonSetting(DEFAULT_SSID)},
+    {"password", JsonSetting(DEFAULT_PASSWORD)},
+    // MQTT Settings (defaults from credentials.h or empty)
+    {"mqtt_server", JsonSetting(MQTT_SERVER)},
+    {"mqtt_port", JsonSetting(MQTT_PORT)},
+    {"mqtt_user", JsonSetting(MQTT_USER)},
+    {"mqtt_pass", JsonSetting(MQTT_PASS)},
     // Hardware Settings
-    {"moduleCount", JsonSetting(8)},
-    {"moduleAddresses", JsonSetting({0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27})},
-    {"magnetPosition", JsonSetting(730)},
-    {"moduleOffsets", JsonSetting({0, 0, 0, 0, 0, 0, 0, 0})},
-    {"displayOffset", JsonSetting(0)},
-    {"sdaPin", JsonSetting(8)},
-    {"sclPin", JsonSetting(9)},
-    {"stepsPerRot", JsonSetting(2048)},
-    {"maxVel", JsonSetting(15.0f)},
-    {"charset", JsonSetting(37)},
+    {"moduleCount", JsonSetting(DEFAULT_MODULE_COUNT)},
+    {"moduleAddresses", JsonSetting(std::vector<int>DEFAULT_MODULE_ADDRESSES)},
+    {"magnetPosition", JsonSetting(DEFAULT_MAGNET_POSITION)},
+    {"moduleOffsets", JsonSetting(std::vector<int>DEFAULT_MODULE_OFFSETS)},
+    {"displayOffset", JsonSetting(DEFAULT_DISPLAY_OFFSET)},
+    {"sdaPin", JsonSetting(DEFAULT_SDA_PIN)},
+    {"sclPin", JsonSetting(DEFAULT_SCL_PIN)},
+    {"stepsPerRot", JsonSetting(DEFAULT_STEPS_PER_ROT)},
+    {"maxVel", JsonSetting(DEFAULT_MAX_VEL)},
+    {"charset", JsonSetting(DEFAULT_CHARSET)},
+    {"transitionType", JsonSetting(DEFAULT_TRANSITION_TYPE)},
     // Operational States
-    {"mode", JsonSetting(0)}
+    {"mode", JsonSetting(DEFAULT_MODE)}
 });
 // clang-format on
+
+#include "modes/SingleInputMode.h"
+#include "modes/MultiInputMode.h"
+#include "modes/DateMode.h"
+#include "modes/TimeMode.h"
+#include "modes/RandomTestMode.h"
+#include "modes/ManualMode.h"
 
 WiFiClient wifiClient;
 SplitFlapDisplay display(settings);
 SplitFlapWebServer webServer(settings);
 SplitFlapMqtt splitflapMqtt(settings, wifiClient);
+
+// Mode instances
+SingleInputMode singleInputMode(display, webServer, settings);
+MultiInputMode multiInputMode(display, webServer, settings);
+DateMode dateMode(display, webServer, settings);
+TimeMode timeMode(display, webServer, settings);
+RandomTestMode randomTestMode(display, webServer, settings);
+ManualMode manualMode(display, webServer, settings);
+
+DisplayMode* currentMode = nullptr;
+int lastModeIndex = -1;
 
 void setup() {
     // put your setup code here, to run once:
@@ -68,6 +113,7 @@ void setup() {
         webServer.startWebServer();
 
         display.init();
+        webServer.setDisplay(&display);  // Connect display to web server for dynamic updates
         display.homeToString("");
 
         if (display.getNumModules() == 8) {
@@ -81,8 +127,10 @@ void setup() {
         webServer.startWebServer();
 
         display.init();
+        webServer.setDisplay(&display);  // Connect display to web server for dynamic updates
         splitflapMqtt.setup();
         splitflapMqtt.setDisplay(&display);
+        splitflapMqtt.setWebServer(&webServer);  // Connect web server to MQTT for state updates
         display.setMqtt(&splitflapMqtt);
 
         display.homeToString("OK");
@@ -94,15 +142,33 @@ void setup() {
 void loop() {
     splitflapMqtt.loop();
 
-    // check what mode the display is in, this value is updated by the web server
-    switch (webServer.getMode()) {
-        case 0: singleInputMode(); break;
-        case 1: multiInputMode(); break;
-        case 2: dateMode(); break;
-        case 3: timeMode(); break;
-        case 4: break;
-        case 5: randomTest(); break;
-        default: break;
+    int modeIndex = webServer.getMode();
+    
+    // Switch mode if changed
+    if (modeIndex != lastModeIndex) {
+        if (currentMode) {
+            currentMode->exit();
+        }
+        
+        switch (modeIndex) {
+            case 0: currentMode = &singleInputMode; break;
+            case 1: currentMode = &multiInputMode; break;
+            case 2: currentMode = &dateMode; break;
+            case 3: currentMode = &timeMode; break;
+            case 4: currentMode = nullptr; break; // Placeholder
+            case 5: currentMode = &randomTestMode; break;
+            case 6: currentMode = &manualMode; break;
+            default: currentMode = nullptr; break;
+        }
+        
+        if (currentMode) {
+            currentMode->enter();
+        }
+        lastModeIndex = modeIndex;
+    }
+
+    if (currentMode) {
+        currentMode->update();
     }
 
     webServer.handleOta();
@@ -114,67 +180,6 @@ void loop() {
     yield();
 }
 
-void singleInputMode() {
-    String userInput = webServer.getInputString();
-    if (userInput != webServer.getWrittenString()) {
-        display.writeString(userInput, MAX_RPM, webServer.getCentering());
-        webServer.setWrittenString(userInput);
-    }
-}
-
-void multiInputMode() {
-    if (millis() - webServer.getLastSwitchMultiTime() > webServer.getMultiWordDelay()) {
-        // get user input, extract correct word from index using webserver counter, and display
-        String userInput = webServer.getMultiInputString();
-        String currWord = extractFromCSV(userInput, webServer.getMultiWordCurrentIndex());
-        if (currWord != webServer.getWrittenString()) {
-            display.writeString(currWord, MAX_RPM, webServer.getCentering());
-            webServer.setWrittenString(currWord);
-        }
-        webServer.setLastSwitchMultiTime(millis());
-        webServer.setMultiWordCurrentIndex((webServer.getMultiWordCurrentIndex() + 1) % (webServer.getNumMultiWords()));
-    }
-}
-
-void dateMode() {
-    if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
-        webServer.setLastCheckDateTime(millis());
-
-        String format = settings.getString("dateFormat");
-        String strftimeFormat = convertToStrftime(format);
-        String result = renderDate(strftimeFormat);
-
-        if (result.length() <= display.getNumModules() && result != webServer.getWrittenString()) {
-            display.writeString(result, MAX_RPM);
-            webServer.setWrittenString(result);
-        }
-    }
-}
-
-void timeMode() {
-    if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
-        webServer.setLastCheckDateTime(millis());
-
-        // Get user-friendly format from settings (fallback to "HH:mm")
-        String userFormat = settings.getString("timeFormat").length() > 0 ? settings.getString("timeFormat") : "HH:mm";
-
-        // Convert to strftime-compatible format
-        String strftimeFormat = convertToStrftime(userFormat);
-        String result = renderTime(strftimeFormat);
-
-        // Write to display if it changed
-        if (result != webServer.getWrittenString()) {
-            display.writeString(result, MAX_RPM);
-            webServer.setWrittenString(result);
-        }
-    }
-}
-
-void randomTest() {
-    display.testRandom();
-    delay(2500);
-}
-
 void checkConnection() {
     if (millis() - webServer.getLastCheckWifiTime() >
         webServer.getWifiCheckInterval()) { // check wifi to see if disconnected
@@ -183,104 +188,59 @@ void checkConnection() {
     }
 }
 
+// Reconnection state variables
+enum ReconnectState {
+    RECONN_IDLE,
+    RECONN_START,
+    RECONN_WAIT_WIFI,
+    RECONN_SHOW_OK,
+    RECONN_CLEAR
+};
+ReconnectState reconnState = RECONN_IDLE;
+unsigned long reconnTimer = 0;
+
 void reconnectIfNeeded() {
-    if (webServer.getAttemptReconnect()) { // check if the device should attempt reconnection to wifi
+    if (webServer.getAttemptReconnect() && reconnState == RECONN_IDLE) {
         webServer.setAttemptReconnect(false);
-        display.writeString("");
-        if (! webServer.connectToWifi()) {
-            webServer.startAccessPoint();
-            webServer.enableOta();
-            webServer.endMDNS();
-            webServer.startMDNS();
-            display.writeChar('X');
-        } else {
-            webServer.enableOta();
-            webServer.endMDNS();
-            webServer.startMDNS();
-            display.writeString("OK");
-            webServer.setWrittenString("OK");
-            delay(500);
+        reconnState = RECONN_START;
+    }
+
+    switch (reconnState) {
+        case RECONN_IDLE:
+            break;
+            
+        case RECONN_START:
             display.writeString("");
-            webServer.setWrittenString("");
-        }
-
-        splitflapMqtt.setup();
-    }
-}
-
-String extractFromCSV(String str, int index) {
-    int startIndex = 0;
-    int endIndex = str.length();
-
-    int commaCount = 0;
-    for (int i = 0; i < str.length(); i++) {
-        if (str[i] == ',') {
-            commaCount++;
-            if (commaCount == index) {
-                startIndex = i + 1; // skip past the comma
-            } else if (commaCount == index + 1) {
-                endIndex = i;
+            if (! webServer.connectToWifi()) {
+                webServer.startAccessPoint();
+                webServer.enableOta();
+                webServer.endMDNS();
+                webServer.startMDNS();
+                display.writeChar('X');
+                reconnState = RECONN_IDLE; // Done (failed)
+            } else {
+                webServer.enableOta();
+                webServer.endMDNS();
+                webServer.startMDNS();
+                display.writeString("OK");
+                webServer.setWrittenString("OK");
+                reconnTimer = millis();
+                reconnState = RECONN_SHOW_OK;
             }
-        }
+            splitflapMqtt.setup();
+            break;
+            
+        case RECONN_SHOW_OK:
+            if (millis() - reconnTimer > 500) {
+                display.writeString("");
+                webServer.setWrittenString("");
+                reconnState = RECONN_IDLE; // Done (success)
+            }
+            break;
+            
+        default:
+            reconnState = RECONN_IDLE;
+            break;
     }
-
-    return str.substring(startIndex, endIndex);
 }
 
-String renderDate(const String &format) {
-    char buf[64];
-    time_t now = time(nullptr);
-    struct tm *timeinfo = localtime(&now);
-
-    strftime(buf, sizeof(buf), format.c_str(), timeinfo);
-
-    return trimToModuleCount(String(buf), display.getNumModules());
-}
-
-String renderTime(const String &format) {
-    char buf[64];
-    time_t now = time(nullptr);
-    struct tm *timeinfo = localtime(&now);
-
-    strftime(buf, sizeof(buf), format.c_str(), timeinfo);
-
-    return trimToModuleCount(String(buf), display.getNumModules());
-}
-
-String trimToModuleCount(const String &str, int maxLen) {
-    return str.length() > maxLen ? str.substring(0, maxLen) : str;
-}
-
-String convertToStrftime(String userFormat) {
-    struct FormatToken
-    {
-        const char *token;
-        const char *strftime;
-    };
-
-    FormatToken tokens[] = {
-        // Date formats
-        {"{yyyy}", "%Y"}, // 4-digit year (e.g. 2025)
-        {"{dddd}", "%A"}, // Full weekday name (e.g. Monday)
-        {"{mmmm}", "%B"}, // Full month name (e.g. January)
-        {"{ddd}", "%a"},  // Abbreviated weekday name (e.g. Mon)
-        {"{mmm}", "%b"},  // Abbreviated month name (e.g. Apr)
-        {"{dd}", "%d"},   // 2-digit day of month, zero-padded (01–31)
-        {"{mm}", "%m"},   // 2-digit month number, zero-padded (01–12)
-        {"{yy}", "%y"},   // 2-digit year (e.g. 25)
-        {"{ww}", "%V"},   // ISO 8601 week number (01–53)
-        {"{D}", "%j"},    // Day of the year (001–366)
-
-        // Time formats
-        {"{HH}", "%H"},   // Hours (24-hour clock, 00–23)
-        {"{hh}", "%I"},   // Hours (12-hour clock, 01–12)
-        {"{MM}", "%M"},   // Minutes (00–59)
-        {"{AMPM}", "%p"}, // AM or PM
-    };
-
-    for (auto &t : tokens) {
-        userFormat.replace(t.token, t.strftime);
-    }
-
-    return userFormat;
-}

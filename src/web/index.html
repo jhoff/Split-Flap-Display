@@ -11,7 +11,7 @@
             }
         </style>
         <link rel="stylesheet" href="index.css" />
-        <script defer src="index.js" type="module"></script>
+        <script type="module" src="./js/main.js"></script>
     </head>
     <body
         x-data="page('Control')"
@@ -35,9 +35,9 @@
             >
                 <option value="2">Date</option>
                 <option value="3">Time</option>
-                <!--        <option value="4">Count</option>-->
                 <option value="6">Custom Text</option>
                 <option value="5">Random</option>
+                <option value="9">Test</option>
             </select>
 
             <template x-if="settings.mode == 6">

@@ -1,7 +1,8 @@
 #include "JsonSettings.h"
 
 #include <ArduinoJson.h>
-#include <sstream>
+#include <stdexcept>
+#include <stdlib.h>
 
 String JsonSettings::getString(const char *key) {
     preferences.begin(name, true);
@@ -29,18 +30,29 @@ std::vector<int> JsonSettings::getIntVector(const char *key) {
     String value = preferences.getString(key, this->find(key).strDefault);
     preferences.end();
 
+    // Parsed by hand rather than with std::istringstream: pulling in <sstream>
+    // drags the whole C++ iostreams and locale machinery into the image, and
+    // with it the wide-character and floating point printf/scanf families -
+    // tens of KB of flash for a comma separated list of small integers.
     std::vector<int> intVector;
-    std::istringstream stream(value.c_str());
-    std::string token;
-    while (std::getline(stream, token, ',')) {
-        try {
-            intVector.push_back(std::stoi(token));
-        } catch (const std::invalid_argument &) {
-            throw std::runtime_error("Invalid CSV: Non-integer value found");
-        } catch (const std::out_of_range &) {
-            throw std::runtime_error("Invalid CSV: Integer value out of range");
+    const char *cursor = value.c_str();
+
+    while (*cursor != '\0') {
+        char *end = nullptr;
+        long parsed = strtol(cursor, &end, 10);
+
+        if (end == cursor) {
+            break; // no digits here, stop rather than spin
+        }
+
+        intVector.push_back((int) parsed);
+        cursor = end;
+
+        while (*cursor == ',' || *cursor == ' ') {
+            cursor++;
         }
     }
+
     return intVector;
 }
 
@@ -63,14 +75,14 @@ void JsonSettings::putFloat(const char *key, float value) {
 }
 
 void JsonSettings::putIntVector(const char *key, std::vector<int> value) {
-    std::ostringstream stream;
+    String joined;
     for (size_t i = 0; i < value.size(); ++i) {
-        stream << value[i];
-        if (i < value.size() - 1) {
-            stream << ",";
+        if (i > 0) {
+            joined += ',';
         }
+        joined += value[i];
     }
-    putString(key, stream.str().c_str());
+    putString(key, joined);
 }
 
 JsonDocument JsonSettings::toJson() {

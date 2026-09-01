@@ -14,14 +14,19 @@ void SplitFlapDisplay::init() {
     maxVel = settings.getFloat("maxVel");
     charSetSize = settings.getInt("charset");
 
+    // moduleCount is what sizes these loops, but the address and offset lists
+    // are free-form strings: a short or malformed one used to read straight
+    // past the end of the vector. Fall back to sane per-module values instead.
+    numModules = constrain(numModules, 1, MAX_MODULES);
+
     std::vector<int> settingAddresses = settings.getIntVector("moduleAddresses");
     for (int i = 0; i < numModules; i++) {
-        moduleAddresses[i] = (uint8_t) settingAddresses[i];
+        moduleAddresses[i] = (uint8_t) (i < (int) settingAddresses.size() ? settingAddresses[i] : 0x20 + i);
     }
 
     std::vector<int> settingOffsets = settings.getIntVector("moduleOffsets");
     for (int i = 0; i < numModules; i++) {
-        moduleOffsets[i] = settingOffsets[i];
+        moduleOffsets[i] = i < (int) settingOffsets.size() ? settingOffsets[i] : 0;
     }
 
     Serial.print("Module Offsets: ");

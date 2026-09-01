@@ -20,7 +20,7 @@ JsonSettings settings = JsonSettings("config", {
     {"otaPass", JsonSetting("")},
     {"timezone", JsonSetting("UTC0")},
     {"dateFormat", JsonSetting("{dd}-{mm}-{yy}")},
-    {"timeFormat", JsonSetting("{HH}:{mm}")},
+    {"timeFormat", JsonSetting("{HH}:{MM}")},
     // Wifi Settings
     {"ssid", JsonSetting("")},
     {"password", JsonSetting("")},
@@ -53,6 +53,9 @@ SplitFlapMqtt splitflapMqtt(settings, wifiClient);
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(SERIAL_SPEED);
+
+    // Before anything else: the modules power up with every coil energized.
+    display.releaseAll();
 
 #ifdef STARTUP_DELAY
     delay(STARTUP_DELAY);
@@ -155,8 +158,9 @@ void timeMode() {
     if (millis() - webServer.getLastCheckDateTime() > webServer.getDateCheckInterval()) {
         webServer.setLastCheckDateTime(millis());
 
-        // Get user-friendly format from settings (fallback to "HH:mm")
-        String userFormat = settings.getString("timeFormat").length() > 0 ? settings.getString("timeFormat") : "HH:mm";
+        // Get user-friendly format from settings (fallback to "{HH}:{MM}")
+        String userFormat =
+            settings.getString("timeFormat").length() > 0 ? settings.getString("timeFormat") : "{HH}:{MM}";
 
         // Convert to strftime-compatible format
         String strftimeFormat = convertToStrftime(userFormat);
@@ -275,6 +279,7 @@ String convertToStrftime(String userFormat) {
         {"{HH}", "%H"},   // Hours (24-hour clock, 00–23)
         {"{hh}", "%I"},   // Hours (12-hour clock, 01–12)
         {"{MM}", "%M"},   // Minutes (00–59)
+        {"{SS}", "%S"},   // Seconds (00-59)
         {"{AMPM}", "%p"}, // AM or PM
     };
 

@@ -6,6 +6,29 @@
 
 SplitFlapDisplay::SplitFlapDisplay(JsonSettings &settings) : settings(settings) {}
 
+// The PCF8575 powers up with every output high, which on this hardware means
+// all four coils of every module are energized - roughly double the current a
+// module draws while actually turning, on all of them at once. Nothing writes
+// them low until init(), which runs after the web server is up and after a WiFi
+// connect that blocks for up to 20 seconds, so the whole display sits at that
+// current for the entire startup. Call this first instead: it only needs the
+// pin and address settings, and costs a handful of i2c writes.
+void SplitFlapDisplay::releaseAll() {
+    int count = constrain(settings.getInt("moduleCount"), 1, MAX_MODULES);
+    std::vector<int> addresses = settings.getIntVector("moduleAddresses");
+
+    Wire.begin(settings.getInt("sdaPin"), settings.getInt("sclPin"));
+    Wire.setClock(400000);
+
+    for (int i = 0; i < count; i++) {
+        SplitFlapModule::releaseCoils((uint8_t) (i < (int) addresses.size() ? addresses[i] : 0x20 + i));
+    }
+
+    Serial.print("Released coils on ");
+    Serial.print(count);
+    Serial.println(" modules");
+}
+
 void SplitFlapDisplay::init() {
     numModules = settings.getInt("moduleCount");
     stepsPerRot = settings.getInt("stepsPerRot");
@@ -115,7 +138,6 @@ void SplitFlapDisplay::home(float speed) {
     for (int i = 0; i < numModules; i++) {
         targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
     }
-    startMotors();
     moveTo(targetPositions, speed, false);
     char homeChar = ' ';
     int charPosition;
@@ -131,7 +153,6 @@ void SplitFlapDisplay::homeToString(String homeString, float speed, bool centeri
     for (int i = 0; i < numModules; i++) {
         targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
     }
-    startMotors();
     moveTo(targetPositions, speed, false);
     writeString(homeString, speed, centering);
 }
@@ -142,13 +163,12 @@ void SplitFlapDisplay::homeToChar(char homeChar, float speed) {
     for (int i = 0; i < numModules; i++) {
         targetPositions[i] = (modules[i].getPosition() - 1 + stepsPerRot) % stepsPerRot;
     }
-    startMotors();
     moveTo(targetPositions, speed, false);
 
     for (int i = 0; i < numModules; i++) {
         targetPositions[i] = modules[i].getCharPosition(homeChar);
     }
-    moveTo(targetPositions, true, speed);
+    moveTo(targetPositions, speed);
 }
 
 void SplitFlapDisplay::writeChar(char inputChar, float speed) {
@@ -218,9 +238,11 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
 
     bool resetLatches[numModules] = {}; // Initialize to false //start with latch on to prevent case where the
     // motion starts with the magnet over the sensor
-    bool needsStepping[numModules] = {};             // Initialize to false; //modules that still require moving
+    int stepsRemaining[numModules] = {};             // steps each module still has to turn
     unsigned long lastStepTimes[numModules] = {};    // Initialize to false; //track when each module was last stepped
     unsigned long lastSensorCheckTime = currentTime; // track when we last read all the hall effect sensors
+
+    bool anyMoving = false;
 
     for (int i = 0; i < numModules; i++) {
         targetPositions[i] = constrain(
@@ -230,35 +252,47 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
         ); // Constrain to avoid errors with incorrect inputs
         resetLatches[i] = true;
         lastStepTimes[i] = currentTime;
-        if (modules[i].getPosition() != targetPositions[i]) {
-            needsStepping[i] = true;
-        } else {
-            needsStepping[i] = false;
+
+        // The drum only ever turns forwards, so the work left to do is the
+        // forward distance to the target. Tracking a step count rather than
+        // comparing positions for equality means a mid-move magnet correction
+        // can never step straight over the target and send the module round for
+        // another full revolution.
+        stepsRemaining[i] = (targetPositions[i] - modules[i].getPosition() + stepsPerRot) % stepsPerRot;
+
+        if (stepsRemaining[i] > 0) {
+            // Only energize the modules that actually have to move. Holding all
+            // of them costs ~200mA each for nothing, and on a shared supply that
+            // sag is exactly what makes the moving modules lose steps.
+            modules[i].start();
+            anyMoving = true;
         }
     }
 
-    startMotors(); // not sure if this helps or not, likely that it does not based
-    // on testing
+    if (! anyMoving) {
+        if (releaseMotors) {
+            stopMotors();
+        }
+        return;
+    }
+
     delay(startStopDelay); // give the motor time to align to magnetic field
 
-    bool isFinished = checkAllFalse(needsStepping, numModules);
+    bool isFinished = false;
     while (! isFinished) {
         currentTime = micros();
         for (int i = 0; i < numModules; i++) {
-            if (((currentTime - lastStepTimes[i]) > timePerStep) && needsStepping[i]) {
+            if (((currentTime - lastStepTimes[i]) > timePerStep) && stepsRemaining[i] > 0) {
                 modules[i].step();
+                stepsRemaining[i]--;
                 lastStepTimes[i] = micros();
-                if (modules[i].getPosition() == targetPositions[i]) { // this module is not in the correct position,
-                    // requires stepping
-                    needsStepping[i] = false;
-                }
             }
         }
 
         if ((currentTime - lastSensorCheckTime) > checkIntervalUs) { // check hall effect sensor every checkIntervalMs
             // check every modules sensor
             for (int i = 0; i < numModules; i++) {
-                if (needsStepping[i] &&
+                if (stepsRemaining[i] > 0 &&
                     (modules[i].readHallEffectSensor() == true
                     )) { // only check sensors where the module is still moving
                     if (! resetLatches[i]) {
@@ -275,36 +309,31 @@ void SplitFlapDisplay::moveTo(int targetPositions[], float speed, bool releaseMo
                         //  modules[i].getPosition()));
                         modules[i].magnetDetected(); // update position to the modules
                         // magnet position
+
+                        // re-derive what is left to turn from the corrected position
+                        stepsRemaining[i] =
+                            (targetPositions[i] - modules[i].getPosition() + stepsPerRot) % stepsPerRot;
                         resetLatches[i] = true;
                     }
                 } else if (resetLatches[i] == true) {
                     resetLatches[i] = false;
                 }
             }
-            isFinished = checkAllFalse(needsStepping, numModules);
             lastSensorCheckTime = currentTime; // recall micros because for loop may
             // take a moment to execute
+        }
+
+        isFinished = true;
+        for (int i = 0; i < numModules; i++) {
+            if (stepsRemaining[i] > 0) {
+                isFinished = false;
+                break;
+            }
         }
     }
     if (releaseMotors) {
         delay(startStopDelay); // allow all motors time to settle
         stopMotors();
-    }
-}
-
-bool SplitFlapDisplay::checkAllFalse(bool array[], int size) {
-    for (int i = 0; i < size; i++) {
-        if (array[i] == true) {
-            return false;              // As soon as a true value is found, return false
-        }
-    }
-    return true;                       // All values were false
-}
-
-void SplitFlapDisplay::startMotors() { // Probably broken somewhere, not sure
-    // why, haven't looked
-    for (int i = 0; i < numModules; i++) {
-        modules[i].start();
     }
 }
 
